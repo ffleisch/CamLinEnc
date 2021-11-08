@@ -1,0 +1,24 @@
+Schreiben einer Python Bibliothek, Kamera als LinEnc
+	Definition des Bibliotheks interfaces
+		Klassendiagram erstellen
+		Statemachine herrausarbeiten
+		
+	Testaufbau bauen
+		Tests aufnehmen und annotieren
+			Format für annotation bestimmmen
+		
+	Entwicklung einer Methode
+		Kalibrierung von Seillänge
+		Kalibrierung von Kamera
+		Segmentierung des Seils von Vordergrund
+		(Entfernen von Motionblur)
+		Bestimmen der Merkmale
+		Erstmal Betrachtung ohne Drehung des Seils
+	Research
+		Betrachtung der Grenzen des algorithmus
+		ähnliche projekte schauen
+		
+	Ergebnissicherung
+		Dokumentation
+		Abschlussbericht
+		Vortrag
