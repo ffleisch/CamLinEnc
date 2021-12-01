@@ -19,6 +19,14 @@ def write_read(x):
     return data
 
 
+
+def wait_for_finish():
+    wait_speed=1000
+    set_speed(wait_speed)
+    num_stuffing=512
+    do_cardinal(0,0,num_stuffing)
+    time.sleep(wait_speed*num_stuffing/1.0e6)
+
 def do_cardinal(left,right,num):
     """
     Move a number of steps on both motors in the specified directions
@@ -70,7 +78,7 @@ def send_bytes(data):
             res = 0
         except IndexError:
             res = 0
-        print(res)
+        #print(res)
         return res
 
     res = read_ard_buff_size()

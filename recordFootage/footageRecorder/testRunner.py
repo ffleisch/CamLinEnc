@@ -2,8 +2,9 @@ import os
 import time
 
 import sendSteps as ss
-
+import recorder as rec
 import math
+
 
 def simple_directions(speed=10, dist=100, delay=2):
     """
@@ -21,22 +22,18 @@ def simple_directions(speed=10, dist=100, delay=2):
     time to wait
     :return:
     """
-    params=[]
+    params = []
 
-
-    for i in range(5):
+    for i in range(20):
         params.append((dist, speed, delay))
         params.append((0, speed, delay))
 
     return params
 
 
-
-
-
 class TestRunner:
 
-    def __init__(self,name="a_test"):
+    def __init__(self, name="a_test"):
         """
         Class for executing a series of moves on the test setup and recording the resulting images/video
         :param name:
@@ -49,7 +46,7 @@ class TestRunner:
 
         self.mm_per_step = 92.5 / 2048
 
-    def run_test(self,directions, prefix="some_params"):
+    def run_test(self, directions, prefix="some_params"):
         """
 
         :param directions:
@@ -61,31 +58,26 @@ class TestRunner:
         :type prefix: str
         """
 
+        # path = os.path.join()
 
-
-        #path = os.path.join()
-
-        pos=0
+        pos = 0
         for d in directions:
-            aim_position=self.mm_to_step(d[0])
-            speed=d[1]
-            delay=d[2]
+            aim_position = self.mm_to_step(d[0])
+            speed = d[1]
+            delay = d[2]
 
             ss.set_speed(self.mm_per_sec_to_mikros(speed))
 
-
-            dir = 0 if aim_position == pos else 1 if aim_position>pos else -1
-            dist=abs(aim_position-pos)
-            print(dir,dist)
-            ss.do_cardinal(dir,dir,dist)
+            dir = 0 if aim_position == pos else 1 if aim_position > pos else -1
+            dist = abs(aim_position - pos)
+            print(dir, dist)
+            ss.do_cardinal(dir, dir, dist)
 
             time.sleep(delay)
 
-            pos=aim_position
+            pos = aim_position
 
-
-
-        pass
+        ss.wait_for_finish()
 
     def mm_to_step(self, dist):
         """
@@ -109,12 +101,12 @@ class TestRunner:
             :rtype:int
             Length of the interval in microseconds
         """
-        intervall=int(math.floor((1/self.mm_to_step(mm_per_sec)*1e6)))
-        if intervall<600:
-            raise Exception("Speed to great for setup: "+str(intervall)+" mirkos")
+        intervall = int(math.floor((1 / self.mm_to_step(mm_per_sec) * 1e6)))
+        if intervall < 600:
+            raise Exception("Speed to great for setup: " + str(intervall) + " mirkos")
         return intervall
 
-    def params_to_file(self,path,directions=None):
+    def params_to_file(self, path, directions=None):
         """
         A function to save all relevant Parameters of a test setup to a text file for later review
         :param path:
@@ -128,7 +120,11 @@ class TestRunner:
 
 if __name__ == "__main__":
     myTestRunner = TestRunner()
-
-    directions = simple_directions(speed=30,dist=100,delay=2)
-
+    recorder = rec.Recorder(save_name="motor_test_6")
+    directions = simple_directions(speed=60, dist=30, delay=0)
+    for d in directions:
+        print(d)
+    recorder.start_recording()
     myTestRunner.run_test(directions)
+    recorder.stop_recording()
+    print("finished test")
