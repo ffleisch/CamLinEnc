@@ -1,3 +1,19 @@
+#Bilder nicht hochladen
+
+**/frame_*.jpg
+
+
+
+
+
+
+
+
+
+
+
+#Standrad kram
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
