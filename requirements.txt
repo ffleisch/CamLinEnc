@@ -1,0 +1,5 @@
+numpy
+imageio
+pytest-shutil
+scikit-image
+pyserial
