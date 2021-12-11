@@ -3,3 +3,10 @@ imageio
 pytest-shutil
 scikit-image
 pyserial
+visvis
+PyOpenGL
+opencv-python
+matplotlib
+imageio-ffmpeg
+PySide2 
+pdbpp
