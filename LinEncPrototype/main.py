@@ -17,10 +17,11 @@ from matplotlib import pyplot as plt
 if __name__=="__main__":
 
 
+    
+    path="./recordFootage/footageRecorder/data"
+    #path="../recordFootage/footageRecorder/data"
 
-    path="../recordFootage/footageRecorder/data"
     test_name="motor_test_5"
-
     video_path=os.path.abspath(os.path.join(path,test_name,test_name+".mp4"))
     print(video_path)
 
@@ -39,12 +40,51 @@ if __name__=="__main__":
         img_copy=frame.copy()
         img=frame[:,:,0]
         img_copy=cv2.cvtColor(img,cv2.COLOR_GRAY2RGB)
+        #blured = cv2.medianBlur(img, 5)
+        
+       
+        canny = cv2.Canny(img, 70, 150,None,3)
+        im = cv2.imread("/Users/brunoreinhold/FSU/AWP3D/CamLinEnc/recordFootage/footageRecorder/data/image_frame.png", cv2.IMREAD_GRAYSCALE)
+        #21,55 both tags; 89,120
+        threshhold_im =  cv2.adaptiveThreshold(img,255,cv2.ADAPTIVE_THRESH_MEAN_C,\
+            cv2.THRESH_BINARY,21,50)
 
-        canny=cv2.Canny(img,70,150,None,3)
+        # Set up the detector with default parameters.
+        params = cv2.SimpleBlobDetector_Params()
+
+        #params.minThreshold = 0;
+        #params.maxThreshold = 100;
+        params.filterByColor = True
+        params.blobColor = 0
+        #params.filterByArea = True
+        #params.minArea = 50
+        #params.maxArea = 10
+        #params.filterByInertia = True
+        #params.minInertiaRatio = 0.5
+
+        ver = (cv2.__version__).split('.')
+        if int(ver[0]) < 3 :
+            detector = cv2.SimpleBlobDetector(params)
+        else: 
+            detector = cv2.SimpleBlobDetector_create(params)
+
+        detector.empty()
+
+        keypoints = detector.detect(threshhold_im)
+        print(keypoints)
+        
+        im_with_keypoints = cv2.drawKeypoints(img, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+
+        # Show keypoints
+        cv2.imshow("Keypoints", im_with_keypoints)
+
+        cv2.waitKey(0)
+
 
 
         #kernel=cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
         #kernel_close=cv2.getStructuringElement(cv2.MORPH_CLOSE,(3,3))
+
 
 
         #canny=cv2.dilate(canny,kernel)
@@ -52,8 +92,9 @@ if __name__=="__main__":
         #canny=cv2.morphologyEx(canny,kernel_close)
 
 
-        lines = cv2.HoughLines(canny, 1, np.pi / 180, 150, None, 0, 0)
 
+        lines = cv2.HoughLines(canny, 1, np.pi / 180, 150, None, 0, 0)
+        print(lines)
 
 
 
@@ -92,6 +133,8 @@ if __name__=="__main__":
         #plt.imshow(dft)
         #plt.show()
         #img_copy+=cv2.cvtColor(canny,cv2.COLOR_GRAY2RGB)
+       
+        
 
         t.SetData(img_copy)
         t2.SetData(canny)
