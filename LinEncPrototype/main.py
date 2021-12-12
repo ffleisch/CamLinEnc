@@ -19,7 +19,7 @@ if __name__=="__main__":
 
 
     path="../recordFootage/footageRecorder/data"
-    test_name="motor_test_5"
+    test_name="motor_test_6"
 
     video_path=os.path.abspath(os.path.join(path,test_name,test_name+".mp4"))
     print(video_path)
@@ -33,12 +33,19 @@ if __name__=="__main__":
     a2 = vv.subplot(122);
     t = vv.imshow(img0,axes=a1)
     t2 = vv.imshow(img0.copy(),axes=a2)
+    img_last=[]
+    diff=[]
     for frame in reader:
         start_time=time.time()
 
         img_copy=frame.copy()
         img=frame[:,:,0]
         img_copy=cv2.cvtColor(img,cv2.COLOR_GRAY2RGB)
+
+        if not img_last==[]:
+            diff=cv2.absdiff(img_last,img_copy)
+        img_last=img_copy.copy()
+
 
         canny=cv2.Canny(img,70,150,None,3)
 
@@ -85,15 +92,16 @@ if __name__=="__main__":
             pt2 = (int(x0 - 10000 * (-b)), int(y0 - 10000 * (a)))
             cv2.line(img_copy, pt1, pt2, (0, 255, 0), 1, cv2.LINE_AA)
 
-
-
-
         #print(frame)
         #plt.imshow(dft)
         #plt.show()
         #img_copy+=cv2.cvtColor(canny,cv2.COLOR_GRAY2RGB)
 
-        t.SetData(img_copy)
+
+        if diff==[]:
+            t.SetData(img_copy)
+        else:
+            t.SetData(diff)
         t2.SetData(canny)
         vv.processEvents()
 
