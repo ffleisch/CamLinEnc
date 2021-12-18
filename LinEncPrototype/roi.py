@@ -160,8 +160,8 @@ def find_roi_parameters(img, debug=False):
                 break
             i += 1
 
-        rope_len = np.linalg.norm(points[0], points[1])
-        size = (rope_len / 2, i * 2)
+        rope_len = np.sqrt(pow(points[0][0]-points[1][0],2)+pow(points[1][0]-points[1][0],2))
+        size = (rope_len / 2, (i+1) * 2)
 
     if found_params:
         params = RoiParams(avg_rho, avg_theta, midpoint, points, size, img_debug)
@@ -178,8 +178,8 @@ def extract_roi(img,params):
 
 
     # crop the image
-    img_roi = img_roi[params.corner_upper_left[0]:params.corner_lower_right[0],
-              params.corner_upper_left[1]:params.corner_lower_right[1]]
+    img_roi = img_roi[params.corner_upper_left[1]:params.corner_lower_right[1],
+              params.corner_upper_left[0]:params.corner_lower_right[0]]
 
 
     return img_roi
