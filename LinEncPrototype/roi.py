@@ -160,8 +160,9 @@ def find_roi_parameters(img, debug=False):
                 break
             i += 1
 
-        rope_len = np.sqrt(pow(points[0][0]-points[1][0],2)+pow(points[1][0]-points[1][0],2))
-        size = (rope_len / 2, (i+1) * 2)
+        rope_len = np.sqrt(pow(points[0][0]-points[1][0],2)+pow(points[0][1]-points[1][1],2))
+
+        size = (rope_len *0.5, (i+1)*1.5)
 
     if found_params:
         params = RoiParams(avg_rho, avg_theta, midpoint, points, size, img_debug)
