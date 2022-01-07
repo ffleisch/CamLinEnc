@@ -37,10 +37,17 @@ def preprocess_roi(img):
 # visvis doesent play nicely with pyplot
 show_img = False
 
+
+do_plot_live = True
+
+extract_differential=True
+differential_frame_number=200
+
+
 if __name__ == "__main__":
 
     path = "../recordFootage/footageRecorder/data"
-    test_name = "motor_test_5"
+    test_name = "motor_test_4"
 
     video_path = os.path.abspath(os.path.join(path, test_name, test_name + ".mp4"))
     print(video_path)
@@ -49,12 +56,20 @@ if __name__ == "__main__":
     #from what image should the roi be extracted?
     #if you give it a differential image while the rope is moving, all background distractions will be ignored
     reader = imageio.get_reader(video_path)
-    for i in range(360):
-        reader.get_next_data()
 
-    img0 = reader.get_next_data()
-    img0 = cv2.absdiff(img0,reader.get_next_data())
-    img0=img0
+
+    img0=None
+    #if the roi should be extracted with a differential image
+    if extract_differential:
+
+        for i in range(differential_frame_number):
+            reader.get_next_data()
+        img0 = reader.get_next_data()
+        img0 = cv2.absdiff(img0,reader.get_next_data())
+    else:
+        img0 = reader.get_next_data()
+
+    img0=img0*2
     plt.imshow(img0)
     plt.show()
 
@@ -90,7 +105,7 @@ if __name__ == "__main__":
     # find index of the most significant peak in the FT (excluding index 0)
     # determine frequency equating to that index using np.fft.fftfreq
     # 1/freq=period
-    period = 1 / np.fft.fftfreq(len(dft))[(np.argmax(dft[1:]) + 1)]
+    period = 1 / np.fft.fftfreq(len(dft))[(np.argmax(dft[1:int(len(dft)/2)]) + 1)]
     print(period)
 
     #fig, axs = plt.subplots(2)
@@ -99,8 +114,10 @@ if __name__ == "__main__":
     #axs[1].plot(dft)
     #plt.show()
 
-    fig, axs = plt.subplots(2)
-    plt.ion()
+    fig,axs=None,None
+    if do_plot_live:
+        fig, axs = plt.subplots(3)
+        plt.ion()
 
     all_shifts = []
     rotations = 0
@@ -124,9 +141,21 @@ if __name__ == "__main__":
         # axs[1].plot(base_brightness)
 
         l = len(brightness)
+
+
+
         # only take the middle of it
-        # this is needed for the correlation to have no adge artifacts
-        brightness = brightness[int(l / 3):int(2 * l / 3)]
+        # this is needed for the correlation to have no edge artifacts
+        # window is what is left ot on the ends and therefore the length of the result of the correlation
+        window=2
+        brightness = brightness[int(period*window/2):int(l- period*window/2)]
+
+        #check if there is enough left for the correlatiuon to be reliable
+        if l-window*period<3*period:
+            raise Exception("Not enough periods in frame")
+
+
+        #brightness = brightness[int(l / 3):int(2 * l / 3)]
 
         # correlate the current brightness distribution and the brightness distribution of the home position
         # mode="valid" only output where the shorter brightness fits entirely onto the base_brightness
@@ -136,12 +165,11 @@ if __name__ == "__main__":
 
 
         # clip the correlation
-        correlation = correlation[:math.ceil(period * 2.5)]
+        #correlation = correlation[:math.ceil(period * 2.5)]
 
-        # center it around 0
-        # not necessary I think
-        correlation = correlation - np.average(correlation)
-        correlation = np.maximum(correlation, 0)
+        # clip anything below the average to avoid detecting local maxima in the valleys
+        correlation = np.maximum(correlation, np.average(correlation))
+
         # the maximum of the correlation indicates how much brightness is shifted from base_brightness
         maxima = argrelextrema(correlation, np.greater)
         shift = 0
@@ -183,21 +211,28 @@ if __name__ == "__main__":
         # print(brightness)
         #'''
         print(shift)
-        axs[1].plot(correlation)
-        # axs[1].scatter(period*phase,0)
 
-        # axs[1].set_ylim((0,1))
 
-        axs[0].imshow(img_roi, cmap="gray")
-        
-        plt.draw()
-        plt.pause(0.001)
-        plt.cla()
-        axs[0].cla()
-        axs[1].cla()
+        if do_plot_live:
+            axs[1].plot(correlation)
+            axs[1].scatter(shift,correlation[shift],"rx")
+            # axs[1].scatter(period*phase,0)
 
-        # plt.imshow(img_copy)
-        # plt.show()'''
+            # axs[1].set_ylim((0,1))
+
+            axs[0].imshow(img_roi, cmap="gray")
+
+            axs[2].plot(all_shifts_summed)
+
+            plt.draw()
+            plt.pause(0.001)
+            plt.cla()
+            axs[0].cla()
+            axs[1].cla()
+            axs[2].cla()
+
+            # plt.imshow(img_copy)
+            # plt.show()'''
 
         if show_img:
             # if diff==[]:
@@ -213,8 +248,12 @@ if __name__ == "__main__":
             if show_img:
                 vv.processEvents()
             pass
-    plt.ioff()
-    fig, axs = plt.subplots(2)
+
+    if do_plot_live:
+        plt.ioff()
+
+
+    fig, axs = plt.subplots(2,sharex=True)
     axs[0].plot(all_shifts)
     axs[1].plot(all_shifts_summed)
     plt.show()
