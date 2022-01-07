@@ -151,7 +151,7 @@ if __name__ == "__main__":
         brightness = brightness[int(period*window/2):int(l- period*window/2)]
 
         #check if there is enough left for the correlatiuon to be reliable
-        if l-window*period<3*period:
+        if l<(window+3)*period:
             raise Exception("Not enough periods in frame")
 
 
@@ -215,10 +215,7 @@ if __name__ == "__main__":
 
         if do_plot_live:
             axs[1].plot(correlation)
-            axs[1].scatter(shift,correlation[shift],"rx")
-            # axs[1].scatter(period*phase,0)
-
-            # axs[1].set_ylim((0,1))
+            axs[1].plot(shift,correlation[shift],"rx")
 
             axs[0].imshow(img_roi, cmap="gray")
 
