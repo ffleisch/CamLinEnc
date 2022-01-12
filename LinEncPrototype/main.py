@@ -116,7 +116,7 @@ if __name__ == "__main__":
 
     fig,axs=None,None
     if do_plot_live:
-        fig, axs = plt.subplots(3)
+        fig, axs = plt.subplots(4)
         plt.ion()
 
     all_shifts = []
@@ -137,8 +137,7 @@ if __name__ == "__main__":
         # get the brightness curve
         brightness = find_brightness_curve(img_roi)
 
-        # axs[1].plot(brightness)
-        # axs[1].plot(base_brightness)
+
 
         l = len(brightness)
 
@@ -152,8 +151,12 @@ if __name__ == "__main__":
 
         #check if there is enough left for the correlatiuon to be reliable
         if l<(window+3)*period:
-            raise Exception("Not enough periods in frame")
+            raise exception("not enough periods in frame")
 
+        if do_plot_live:
+
+            axs[1].plot(brightness)
+            axs[1].plot(base_brightness)
 
         #brightness = brightness[int(l / 3):int(2 * l / 3)]
 
@@ -214,19 +217,26 @@ if __name__ == "__main__":
 
 
         if do_plot_live:
-            axs[1].plot(correlation)
-            axs[1].plot(shift,correlation[shift],"rx")
+            axs[2].plot(correlation)
+            axs[2].plot(shift,correlation[shift],"rx")
+
+            axs[2].set_xlim(0,len(base_brightness))
 
             axs[0].imshow(img_roi, cmap="gray")
 
-            axs[2].plot(all_shifts_summed)
+            axs[3].plot(all_shifts_summed)
 
             plt.draw()
-            plt.pause(0.001)
+            #plt.pause(0.001)
+            plt.pause(1)
+
             plt.cla()
             axs[0].cla()
             axs[1].cla()
             axs[2].cla()
+            axs[3].cla()
+
+
 
             # plt.imshow(img_copy)
             # plt.show()'''
