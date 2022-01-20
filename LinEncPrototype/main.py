@@ -46,7 +46,7 @@ differential_frame_number=200
 
 if __name__ == "__main__":
 
-    path = "../recordFootage/footageRecorder/data"
+    path = "./recordFootage/footageRecorder/data"
     test_name = "motor_test_4"
 
     video_path = os.path.abspath(os.path.join(path, test_name, test_name + ".mp4"))
