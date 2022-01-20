@@ -7,139 +7,260 @@ import imageio
 import visvis as vv
 import numpy as np
 import cv2
-
+import roi
 
 from matplotlib import pyplot as plt
 
+from scipy.signal import argrelextrema
+import datetime
+
+# find the average brightness in a column of the roi
+# preprocess that image before
+def find_brightness_curve(img):
+    img_prep = preprocess_roi(img)
+    # plt.imshow(img_prep,cmap="gray")
+    # plt.show()
+    return [sum(img_prep[:, i]) / (img_prep.shape[0] * 255) for i in range(img_prep.shape[1])]
 
 
+# do a adaptive threshold and some blurring
+# suppreses brightness variation over the image
+def preprocess_roi(img):
+    sigma1 = 5
+    sigma2 = 30
+    img_blur = cv2.GaussianBlur(img, (0, 0), sigma1, sigma1)
+    img_roi_flat = cv2.GaussianBlur(img, (0, 0), sigma2, sigma2)
+    return cv2.absdiff(img_blur, img_roi_flat)
 
-if __name__=="__main__":
+
+# use visvis to show images
+# visvis doesent play nicely with pyplot
+show_img = False
 
 
-    
-    path="./recordFootage/footageRecorder/data"
-    #path="../recordFootage/footageRecorder/data"
+do_plot_live = True
 
-    test_name="motor_test_6"
-    video_path=os.path.abspath(os.path.join(path,test_name,test_name+".mp4"))
+extract_differential=True
+differential_frame_number=200
+
+
+if __name__ == "__main__":
+
+    path = "./recordFootage/footageRecorder/data"
+    test_name = "motor_test_4"
+
+    video_path = os.path.abspath(os.path.join(path, test_name, test_name + ".mp4"))
     print(video_path)
 
 
-    reader=imageio.get_reader(video_path)
-    img0=reader.get_next_data()
+    #from what image should the roi be extracted?
+    #if you give it a differential image while the rope is moving, all background distractions will be ignored
+    reader = imageio.get_reader(video_path)
 
 
-    a1 = vv.subplot(121);
-    a2 = vv.subplot(122);
-    t = vv.imshow(img0,axes=a1)
-    t2 = vv.imshow(img0.copy(),axes=a2)
-    for frame in reader:
-        start_time=time.time()
+    img0=None
+    #if the roi should be extracted with a differential image
+    if extract_differential:
 
-        img_copy=frame.copy()
-        img=frame[:,:,0]
-        img_copy=cv2.cvtColor(img,cv2.COLOR_GRAY2RGB)
-        #blured = cv2.medianBlur(img, 5)
-        
-       
-        canny = cv2.Canny(img, 70, 150,None,3)
-        im = cv2.imread("/Users/brunoreinhold/FSU/AWP3D/CamLinEnc/recordFootage/footageRecorder/data/image_frame.png", cv2.IMREAD_GRAYSCALE)
-        #21,55 both tags; 89,120
-        threshhold_im =  cv2.adaptiveThreshold(img,255,cv2.ADAPTIVE_THRESH_MEAN_C,\
-            cv2.THRESH_BINARY,21,50)
+        for i in range(differential_frame_number):
+            reader.get_next_data()
+        img0 = reader.get_next_data()
+        img0 = cv2.absdiff(img0,reader.get_next_data())
+    else:
+        img0 = reader.get_next_data()
 
-        # Set up the detector with default parameters.
-        params = cv2.SimpleBlobDetector_Params()
+    img0=img0*2
+    plt.imshow(img0)
+    plt.show()
 
-        #params.minThreshold = 0;
-        #params.maxThreshold = 100;
-        params.filterByColor = True
-        params.blobColor = 0
-        #params.filterByArea = True
-        #params.minArea = 50
-        #params.maxArea = 10
-        #params.filterByInertia = True
-        #params.minInertiaRatio = 0.5
+    if show_img:
+        a1 = vv.subplot(131);
+        a2 = vv.subplot(132);
+        a3 = vv.subplot(133);
+        t = vv.imshow(img0, axes=a1)
+        t2 = vv.imshow(img0.copy(), axes=a2)
+        t3 = vv.imshow(img0.copy(), axes=a3)
 
-        ver = (cv2.__version__).split('.')
-        if int(ver[0]) < 3 :
-            detector = cv2.SimpleBlobDetector(params)
-        else: 
-            detector = cv2.SimpleBlobDetector_create(params)
+    # graphs_plots=vv.figure()
 
-        detector.empty()
+    # img_last=[]
+    # diff=[]
 
-        keypoints = detector.detect(threshhold_im)
-        print(keypoints)
-        
-        im_with_keypoints = cv2.drawKeypoints(img, keypoints, np.array([]), (0,0,255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+    # find the roi
+    # doesent change throughout the video
+    roi_params = roi.find_roi_parameters(img0, debug=True)
+    print(roi_params)
+    print(roi_params.size)
+    print(roi_params.rho, roi_params.theta)
 
-        # Show keypoints
-        cv2.imshow("Keypoints", im_with_keypoints)
+    # find the brightness distribution of the home position
+    base_brightness = find_brightness_curve(roi.extract_roi(img0[:, :, 0], roi_params))
 
-        cv2.waitKey(0)
+    # determine the periodicity of the rope
 
+    # absolute spectrum of a dft
+    dft = np.abs(np.fft.fft(base_brightness))
 
+    # period of the signal in pixels
+    # find index of the most significant peak in the FT (excluding index 0)
+    # determine frequency equating to that index using np.fft.fftfreq
+    # 1/freq=period
+    period = 1 / np.fft.fftfreq(len(dft))[(np.argmax(dft[1:int(len(dft)/2)]) + 1)]
+    print(period)
 
-        #kernel=cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3))
-        #kernel_close=cv2.getStructuringElement(cv2.MORPH_CLOSE,(3,3))
+    #fig, axs = plt.subplots(2)
 
+    #axs[0].plot(base_brightness)
+    #axs[1].plot(dft)
+    #plt.show()
 
+    fig,axs=None,None
+    if do_plot_live:
+        fig, axs = plt.subplots(4)
+        plt.ion()
 
-        #canny=cv2.dilate(canny,kernel)
+    all_shifts = []
+    rotations = 0
+    all_shifts_summed = []
+    last_shift = None
 
-        #canny=cv2.morphologyEx(canny,kernel_close)
+    for num,frame in enumerate(reader):
+        start_time = time.time()
 
+        img_copy = frame.copy()
+        img = frame[:, :, 0]
+        # img_copy=cv2.cvtColor(img,cv2.COLOR_GRAY2RGB)
 
+        # extract roi from image
+        img_roi = roi.extract_roi(img, roi_params)
 
-        lines = cv2.HoughLines(canny, 1, np.pi / 180, 150, None, 0, 0)
-        print(lines)
-
-
-
-
-
-        if lines is not None:
-            #print(lines)
-
-            for i in range(0, len(lines)):
-                rho = lines[i][0][0]
-                theta = lines[i][0][1]
-                a = math.cos(theta)
-                b = math.sin(theta)
-                x0 = a * rho
-                y0 = b * rho
-                pt1 = (int(x0 + 10000 * (-b)), int(y0 + 10000 * (a)))
-                pt2 = (int(x0 - 10000 * (-b)), int(y0 - 10000 * (a)))
-                cv2.line(img_copy, pt1, pt2, (0, 0, 255), 1, cv2.LINE_AA)
-
-            avg_rho = np.average(lines[:, 0, 0])
-            avg_theta = np.average(lines[:, 0, 1])
-
-            print(avg_rho, avg_theta)
-            a = math.cos(avg_theta)
-            b = math.sin(avg_theta)
-            x0 = a * avg_rho
-            y0 = b * avg_rho
-            pt1 = (int(x0 + 10000 * (-b)), int(y0 + 10000 * (a)))
-            pt2 = (int(x0 - 10000 * (-b)), int(y0 - 10000 * (a)))
-            cv2.line(img_copy, pt1, pt2, (0, 255, 0), 1, cv2.LINE_AA)
+        # get the brightness curve
+        brightness = find_brightness_curve(img_roi)
 
 
 
-
-        #print(frame)
-        #plt.imshow(dft)
-        #plt.show()
-        #img_copy+=cv2.cvtColor(canny,cv2.COLOR_GRAY2RGB)
-       
-        
-
-        t.SetData(img_copy)
-        t2.SetData(canny)
-        vv.processEvents()
+        l = len(brightness)
 
 
-        while(time.time()-start_time<0):
+
+        # only take the middle of it
+        # this is needed for the correlation to have no edge artifacts
+        # window is what is left ot on the ends and therefore the length of the result of the correlation
+        window=2
+        brightness = brightness[int(period*window/2):int(l- period*window/2)]
+
+        #check if there is enough left for the correlatiuon to be reliable
+        if l<(window+3)*period:
+            raise exception("not enough periods in frame")
+
+        if do_plot_live:
+
+            axs[1].plot(brightness)
+            axs[1].plot(base_brightness)
+
+        #brightness = brightness[int(l / 3):int(2 * l / 3)]
+
+        # correlate the current brightness distribution and the brightness distribution of the home position
+        # mode="valid" only output where the shorter brightness fits entirely onto the base_brightness
+        correlation = np.correlate(base_brightness, brightness, mode="valid")
+
+
+
+
+        # clip the correlation
+        #correlation = correlation[:math.ceil(period * 2.5)]
+
+        # clip anything below the average to avoid detecting local maxima in the valleys
+        correlation = np.maximum(correlation, np.average(correlation))
+
+        # the maximum of the correlation indicates how much brightness is shifted from base_brightness
+        maxima = argrelextrema(correlation, np.greater)
+        shift = 0
+        if len(maxima[0]) >= 2:
+            # print(maxima)
+            # print(maxima[0][0]-maxima[0][1])
+            #for m in maxima[0]:
+            #    axs[1].plot(m, correlation[m], "rx")
+            shift = maxima[0][0]
+            # print(shift)
+        else:
+            #print("oof")
+            shift = np.argmax(correlation)
+
+        '''#clip the correlation
+        correlation=correlation[:math.ceil(period)]
+        #center it around 0
+        #not necessary I think
+        correlation=correlation-np.average(correlation)
+        #the maximum of the correlation indicates how much brightness is shifted from base_brightness
+        shift=np.argmax(correlation)'''
+
+
+        print(str(datetime.timedelta(seconds=num/30)),shift)
+
+
+        # increment a counter if shift rolls over(period)
+        if last_shift is not None:
+            if abs(last_shift - shift) > period / 2:
+                if last_shift > shift:
+                    rotations += 1
+                else:
+                    rotations -= 1
+        last_shift = shift
+        all_shifts.append(shift)
+        all_shifts_summed.append(rotations * period + shift)
+
+        # print(correlation)
+        # print(brightness)
+        #'''
+        print(shift)
+
+
+        if do_plot_live:
+            axs[2].plot(correlation)
+            axs[2].plot(shift,correlation[shift],"rx")
+
+            axs[2].set_xlim(0,len(base_brightness))
+
+            axs[0].imshow(img_roi, cmap="gray")
+
+            axs[3].plot(all_shifts_summed)
+
+            plt.draw()
+            #plt.pause(0.001)
+            plt.pause(1)
+
+            plt.cla()
+            axs[0].cla()
+            axs[1].cla()
+            axs[2].cla()
+            axs[3].cla()
+
+
+
+            # plt.imshow(img_copy)
+            # plt.show()'''
+
+        if show_img:
+            # if diff==[]:
+            t.SetData(img_copy)
+            # else:
+            #    t.SetData(diff)
+            t2.SetData(roi_params.img_debug)
+
+            t3.SetData(img_roi)
             vv.processEvents()
+
+        while (time.time() - start_time < 0):
+            if show_img:
+                vv.processEvents()
+            pass
+
+    if do_plot_live:
+        plt.ioff()
+
+
+    fig, axs = plt.subplots(2,sharex=True)
+    axs[0].plot(all_shifts)
+    axs[1].plot(all_shifts_summed)
+    plt.show()
