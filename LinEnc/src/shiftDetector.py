@@ -5,7 +5,7 @@ class ShiftDetector(ABC):
 
 
     @abstractmethod
-    def set_base_image(self,base_image):
+    def set_base_image(self, base_image_roi):
         pass
 
     @abstractmethod

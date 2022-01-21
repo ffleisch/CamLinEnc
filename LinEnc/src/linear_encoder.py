@@ -4,6 +4,7 @@ import cv2
 
 import roiExtractorCanny
 import shiftDetectorCovariance
+import shiftDetectorRestoration
 from abc import ABC, abstractmethod
 import imageio
 from matplotlib import pyplot as plt
@@ -36,10 +37,13 @@ class LinearEncoder:
         base_img=self.find_roi_static(image_stream)
         base_img_roi=self.extractor.extractRoi(base_img)
 
+        plt.imshow(base_img_roi)
+        plt.show()
         self.detector.set_base_image(self.preprocess(base_img_roi))
 
 
     def preprocess(self,img):
+        #return cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
         return img[:,:,0]
 
     def find_roi_static(self,image_stream):
@@ -51,11 +55,13 @@ class LinearEncoder:
             if res:
                 return img
 
+
+    #Todo reject bad diff images
     def find_roi_dynamic(self,image_stream):
         img_last=image_stream.get_next_image()
         while True:
             img=image_stream.get_next_image()
-            if not img:
+            if img is None:
                 raise ValueError("No Image given")
 
             diff_img=img_last-img
@@ -79,7 +85,7 @@ class LinearEncoder:
 if __name__=="__main__":
 
     path = "../../recordFootage/footageRecorder/data"
-    test_name = "motor_test_1"
+    test_name = "motor_test_4"
 
     video_path = os.path.abspath(os.path.join(path, test_name, test_name + ".mp4"))
     print(video_path)
@@ -88,19 +94,21 @@ if __name__=="__main__":
     my_stream=IIOImageStream(reader)
 
     extr=roiExtractorCanny.RoiExtractorCanny()
-    detec=shiftDetectorCovariance.ShiftDetectorCovariance()
+    #detec=shiftDetectorCovariance.ShiftDetectorCovariance()
+    detec=shiftDetectorRestoration.ShiftDetectorRestoration()
 
     lin_enc=LinearEncoder(extr,detec,my_stream)
 
 
-
+    plt.ion()
     shifts=[]
     for img in reader:
         d=lin_enc.get_next_shift(img)
-        print(d)
+        #print(d)
         shifts.append(d)
 
-
+    plt.ioff()
+    plt.clf()
     plt.plot(shifts)
     plt.show()
 
