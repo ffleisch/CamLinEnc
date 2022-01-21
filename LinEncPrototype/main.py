@@ -38,16 +38,16 @@ def preprocess_roi(img):
 show_img = False
 
 
-do_plot_live = True
+do_plot_live = False
 
-extract_differential=True
-differential_frame_number=200
+extract_differential=False
+differential_frame_number=20
 
 
 if __name__ == "__main__":
 
-    path = "./recordFootage/footageRecorder/data"
-    test_name = "motor_test_4"
+    path = "../recordFootage/footageRecorder/data"
+    test_name = "motor_test_1"
 
     video_path = os.path.abspath(os.path.join(path, test_name, test_name + ".mp4"))
     print(video_path)
@@ -69,7 +69,7 @@ if __name__ == "__main__":
     else:
         img0 = reader.get_next_data()
 
-    img0=img0*2
+    #img0=img0*2
     plt.imshow(img0)
     plt.show()
 
@@ -151,7 +151,7 @@ if __name__ == "__main__":
 
         #check if there is enough left for the correlatiuon to be reliable
         if l<(window+3)*period:
-            raise exception("not enough periods in frame")
+            raise Exception("not enough periods in frame")
 
         if do_plot_live:
 

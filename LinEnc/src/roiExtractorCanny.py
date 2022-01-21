@@ -157,7 +157,7 @@ class RoiExtractorCanny(roiE.RoiExtractor):
                             cv2.circle(self.img_debug, (xi, yi), 2, (0, 255, 255), 2)
                             cv2.circle(self.img_debug, (xo, yo), 2, (0, 255, 255), 2)
                             print(i)
-                        self.foundParams = True
+                        self.found_params = True
                         break
                 except IndexError:
                     print("could not determine width of rope")
@@ -175,11 +175,11 @@ class RoiExtractorCanny(roiE.RoiExtractor):
                 self.corner_lower_right = (int(midpoint[0] + self.size[0] / 2), int(midpoint[1] + self.size[1] / 2))
 
                 self.rotation_matrix = cv2.getRotationMatrix2D(midpoint, (self.theta - math.pi / 2) * (180 / math.pi), 1)
-        return self.foundParams
+        return self.found_params
 
     def extractRoi(self, image):
 
-        if self.foundParams:
+        if self.found_params:
             size_rotation = (image.shape[1], image.shape[0])
             img_roi = cv2.warpAffine(image, self.rotation_matrix, dsize=size_rotation)
 

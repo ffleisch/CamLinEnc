@@ -3,9 +3,11 @@ from abc import ABC, abstractmethod
 
 class ShiftDetector(ABC):
 
-    def __init__(self, baseImage):
-        self.baseImage = baseImage
 
     @abstractmethod
-    def findShift(self, img_roi):
+    def set_base_image(self,base_image):
+        pass
+
+    @abstractmethod
+    def find_shift(self, img_roi):
         pass

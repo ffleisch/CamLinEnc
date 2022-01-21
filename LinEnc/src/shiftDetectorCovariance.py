@@ -8,11 +8,9 @@ from scipy.signal import argrelextrema
 
 class ShiftDetectorCovariance(sD.ShiftDetector):
 
-    def __init__(self,baseImage):
-        super().__init__()
-
+    def set_base_image(self,base_image):
         # find the brightness distribution of the home position
-        self.base_brightness = self.find_brightness_curve(baseImage)
+        self.base_brightness = self.find_brightness_curve(base_image)
 
         # determine the periodicity of the rope
 
@@ -52,7 +50,7 @@ class ShiftDetectorCovariance(sD.ShiftDetector):
         img_roi_flat = cv2.GaussianBlur(img, (0, 0), sigma2, sigma2)
         return cv2.absdiff(img_blur, img_roi_flat)
 
-    def findShift(self,img_roi):
+    def find_shift(self, img_roi):
 
         # get the brightness curve
         brightness = self.find_brightness_curve(img_roi)
