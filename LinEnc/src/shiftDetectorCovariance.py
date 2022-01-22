@@ -113,6 +113,6 @@ class ShiftDetectorCovariance(sD.ShiftDetector):
 
 
 
-        return(self.period*self.rotations+self.shift)
+        return (self.period*self.rotations+self.shift)
 
 

@@ -26,6 +26,8 @@ class RoiExtractorCanny(roiE.RoiExtractor):
 
         self.found_params = False
 
+
+    #plto a line using rho and theta coodinates
     def __plot_line(self, img, rho, theta, col):
         a = math.cos(theta)
         b = math.sin(theta)
@@ -98,6 +100,8 @@ class RoiExtractorCanny(roiE.RoiExtractor):
         p1 = (int(filter_mask.shape[1] / 2 + dx * 1000), int(filter_mask.shape[0] / 2 + dy * 1000))
         p2 = (int(filter_mask.shape[1] / 2 - dx * 1000), int(filter_mask.shape[0] / 2 - dy * 1000))
 
+
+        #draw the filter
         cv2.line(filter_mask, p1, p2, 1, 10, cv2.LINE_AA)
 
         # plt.imshow(filter)
