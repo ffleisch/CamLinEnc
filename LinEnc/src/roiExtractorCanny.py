@@ -27,7 +27,7 @@ class RoiExtractorCanny(roiE.RoiExtractor):
         self.found_params = False
 
 
-    #plto a line using rho and theta coodinates
+    #plot a line using rho and theta coodinates
     def __plot_line(self, img, rho, theta, col):
         a = math.cos(theta)
         b = math.sin(theta)

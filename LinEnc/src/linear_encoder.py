@@ -27,15 +27,18 @@ class LinearEncoder:
 
 
 
-    def __init__(self,extractor,detector,image_stream,extraction_mode="static"):
+    def __init__(self, extractor, detector, image_stream, extraction_mode="static"):
         """
 
         :param extractor: a roiExtractor instance to crop the ROI from the input image
-        :param detector: a shift Detector to calculate and compound the shift from, subsequent given images
+        :param detector: a shift Detector to calculate and compound the shift from,
+         subsequent given images
 
-        :param extraction_mode: determine the roi from an image alone "static" or the difference between two subsequent ones "dynamic"
+        :param extraction_mode: determine the roi from an image alone "static" or
+         the difference between two subsequent ones "dynamic"
 
-        :param image_stream: a stream of images to initalize the roiExtractor and get the base image for the detector from
+        :param image_stream: a stream of images to initalize the roiExtractor and
+         get the base image for the detector from
         """
         self.extractor=extractor
         self.detector=detector
@@ -64,14 +67,15 @@ class LinearEncoder:
         """
 
         #the current algorithm needs a single color channel
-        #with the red and blue pattern in our test footage it is adventageous to use only the red channel
+        #with the red and blue pattern in our test footage it is adventageous
+        #to use only the red channel
 
         #return cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
         return img[:,:,0]
 
 
     #find the roi by using the image directly
-    def find_roi_static(self,image_stream):
+    def find_roi_static(self, image_stream):
         """
         Find the Roi using the images directly
         Background has to be very flat
@@ -91,10 +95,10 @@ class LinearEncoder:
     #Todo reject bad diff images
     #
 
-    def find_roi_dynamic(self,image_stream):
+    def find_roi_dynamic(self, image_stream):
         """
         Find the Roi using the difference of two subsequent images
-        Needs movement inbetween the images to work
+        Needs movement in between the images to work
         Stops if parameters are found or stream runs out
         :param image_stream:
         :return:
@@ -133,7 +137,7 @@ class LinearEncoder:
 #some testing of the class
 if __name__=="__main__":
 
-    path = "../../recordFootage/footageRecorder/data"
+    path = "./recordFootage/footageRecorder/data"
     test_name = "motor_test_6"
 
     video_path = os.path.abspath(os.path.join(path, test_name, test_name + ".mp4"))
@@ -146,7 +150,7 @@ if __name__=="__main__":
     #detec=shiftDetectorCovariance.ShiftDetectorCovariance()
     detec=shiftDetectorRestoration.ShiftDetectorRestoration()
 
-    lin_enc=LinearEncoder(extr,detec,my_stream,"dynamic")
+    lin_enc=LinearEncoder(extr, detec, my_stream, "dynamic")
 
 
     plt.ion()
