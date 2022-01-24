@@ -8,10 +8,10 @@ import roiExtractor as roiE
 
 class RoiExtractorCanny(roiE.RoiExtractor):
 
-    def __init__(self, debug_draw=False):
+    def __init__(self, config):
         super(RoiExtractorCanny, self).__init__()
-        self.debug_draw = debug_draw
-
+        self.config = config
+        self.debug_draw = self.config.debug_draw
         self.img_debug = None
 
         self.rope_len = 0
@@ -68,9 +68,16 @@ class RoiExtractorCanny(roiE.RoiExtractor):
         if self.debug_draw:
             self.img_debug = image.copy()
 
-        canny = cv2.Canny(image, 70, 150, None, 3)
+        canny = cv2.Canny(image, self.config.cannyUpperThreshold,\
+             self.config.cannyLowerThreshold,\
+             None, self.config.cannyApertureSize)
 
-        lines = cv2.HoughLines(canny, 2, np.pi / 180, 150, None, 0, 0)
+        lines = cv2.HoughLines(canny, self.config.HoughLinesRho,\
+             self.config.HoughLinesTheta,\
+             self.config.HoughLinesThreshold,\
+             self.config.HoughLinesLines,\     
+             self.config.HoughLinesSRN,\
+             self.config.HoughLinesSTN)
 
         # draw lines to show
         # compute average theta and rho
