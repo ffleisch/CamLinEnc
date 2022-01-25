@@ -31,7 +31,7 @@ class LinearEncoder:
 
 
 
-    def __init__(self, extractor, detector, image_stream, extraction_mode="static", config):
+    def __init__(self, extractor, detector, image_stream, config, extraction_mode="static"):
         """
 
         :param extractor: a roiExtractor instance to crop the ROI from the input image
@@ -60,7 +60,7 @@ class LinearEncoder:
 
         plt.imshow(base_img_roi)
         plt.show()
-        self.detector.set_base_image(self.preprocess(base_img_roi), config.image_color_channel)
+        self.detector.set_base_image(self.preprocess(base_img_roi), self.config.image_color_channel)
         self.zero_shift= config.zero_shift
         self.shift=0
 
@@ -76,7 +76,7 @@ class LinearEncoder:
         #to use only the red channel
 
         #return cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
-        return img[:,:,0]
+        return img[:,:,color_channel]
 
 
     #find the roi by using the image directly
@@ -154,7 +154,7 @@ if __name__=="__main__":
         mode = config.mode
     else:
         mode = args.mode
-        
+
     if "" == args.footage:
         video_path = config.footage
     else:
@@ -168,12 +168,12 @@ if __name__=="__main__":
     reader = imageio.get_reader(video_path)
     my_stream=IIOImageStream(reader)
 
-    extr=roiExtractorCanny.RoiExtractorCanny()
-    #detec=shiftDetectorCovariance.ShiftDetectorCovariance()
-    detec=shiftDetectorRestoration.ShiftDetectorRestoration()
+    extr=roiExtractorCanny.RoiExtractorCanny(config)
+    detec=shiftDetectorCovariance.ShiftDetectorCovariance()
+    #detec=shiftDetectorRestoration.ShiftDetectorRestoration()
 
 
-    lin_enc=LinearEncoder(extr, detec, my_stream, mode, config)
+    lin_enc=LinearEncoder(extr, detec, my_stream, config, mode)
 
 
     plt.ion()

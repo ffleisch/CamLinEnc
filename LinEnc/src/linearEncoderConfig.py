@@ -1,7 +1,7 @@
 import numpy as np
 
 
-class Class LinearEncoderConfig():
+class LinearEncoderConfig():
     """
     Default configuration for the linear encoder.
 
@@ -44,10 +44,60 @@ class Class LinearEncoderConfig():
         # SRN = 0  and STN = 0 represents classical Hough transfromation
         self.HoughLinesSTN = 0
 
+        # filter canny edges into thick line to later exctract width
+        self.cannyEdgesFilterMask = np.zeros((70, 70))
+        # added to the denominator for calculating the points of the lines
+        self.pointBaseAdd = 2
+        # added to the denominator for calculating the points of the lines
+        self.pointBaseFactor = 1000
+        # color of the line 
+        self.lineColor = 1
+        # thickness of the line 
+        self.lineThickness = 10
+        # offset for calculating the intersection (x coordinate)
+        self.config.intersectionOffsetX = 0
+        # offset for calculating the intersection (y coordinate)        
+        self.config.intersectionOffsetY = 0 
+
+        # (debug mode) circle radius for finding the rope with
+        self.config.RoiCenterCircleRadius = 2
+        # (debug mode) circle thickness for finding the rope with
+        self.config.RoiCenterCircleThickness = 2
+        # (debug mode) circle color for finding the rope with
+        self.config.RoiCenterCircleColor = (0, 255, 255)
+
+        # (debug mode) circle radius for finding the rope with
+        self.config.findRopeWidthCircleRadius = 2
+        # (debug mode) circle thickness for finding the rope with
+        self.config.findRopeWidthCircleThickness = 2
+        # (debug mode) circle color for finding the rope with
+        self.config.findRopeWidthCircleColor = (0, 255, 255)
+
+        # multiplier for calculating the length of the roi window 
+        self.config.RoiLengthMultiplier = 0.5
+        # multiplier for calculating the width of the roi window 
+        self.config.RoiWidthMultiplier = 1.5
 
 
+        # ShiftDetectorRestoration
+        # beta for shift detector restoration
+        self.ShiftDetectorRestorationBeta = 1000
+        # Create an image of a given size with the edges fading to 0
+        # Multiplying by it allows to eliminate edge effects created during the IFFT
+        # How many percent of the width too fade out
+        self.ShiftDetectorRestorationPercentWidthFadeout = 0.3
+        # How many percent of the length too fade out 
+        self.ShiftDetectorRestorationPercentLengthFadeout = 0
+        # factor for calculation the base image
+        self.ShiftDetectorRestorationBaseImageMultiplier = 2
+        # applying gaussina filtering to slice (interval upper bound) 
+        self.ShiftDetectorRestorationBaseImageGaussianFilterMultiplierUpper = 0.03
+        # applying gaussina filtering to slice (interval lower bound)
+        self.ShiftDetectorRestorationBaseImageGaussianFilterMultiplierLower  = 0.01
 
 
-        
-
-
+        #ShiftDetectorCovariance
+        # sigma for gaussian ShiftDetectorRestoration image blur
+        self.ShiftDetectorRestorationPrepRoiSigma1 = 5
+        # sigma for gaussian ShiftDetectorRestoration image roi flat blur
+        self.ShiftDetectorRestorationPrepRoiSigma2 = 30
