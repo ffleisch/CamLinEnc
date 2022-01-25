@@ -9,7 +9,7 @@ import roiExtractor as roiE
 class RoiExtractorCanny(roiE.RoiExtractor):
 
     def __init__(self, config):
-        super(RoiExtractorCanny, self).__init__()
+        super(RoiExtractorCanny, self).__init__(config)
         self.config = config
         self.debug_draw = self.config.debug_draw
         self.img_debug = None
@@ -75,7 +75,7 @@ class RoiExtractorCanny(roiE.RoiExtractor):
         lines = cv2.HoughLines(canny, self.config.HoughLinesRho,\
              self.config.HoughLinesTheta,\
              self.config.HoughLinesThreshold,\
-             self.config.HoughLinesLines,\     
+             self.config.HoughLinesLines,\
              self.config.HoughLinesSRN,\
              self.config.HoughLinesSTN)
 

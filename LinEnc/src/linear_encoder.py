@@ -1,10 +1,10 @@
 import os
-
+import sys
 import cv2
 import argparse
 
 
-import LinearEncoderConfig
+import linearEncoderConfig
 import roiExtractorCanny
 import shiftDetectorCovariance
 import shiftDetectorRestoration
@@ -60,9 +60,9 @@ class LinearEncoder:
 
         plt.imshow(base_img_roi)
         plt.show()
-        self.detector.set_base_image(self.preprocess(base_img_roi), self.config.image_color_channel)
+        self.detector.set_base_image(self.preprocess(base_img_roi, self.config.image_color_channel))
         self.zero_shift= config.zero_shift
-        self.shift=0
+        self.shift=0 
 
     def preprocess(self,img, color_channel):
         """
@@ -141,14 +141,12 @@ class LinearEncoder:
 
 #some testing of the class
 if __name__=="__main__":
-    config = LinearEncoderConfig() 
+    config = linearEncoderConfig.LinearEncoderConfig() 
     parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("--footage", help="provide the footage path", default='')
     parser.add_argument("--mode", help="provide the mode of operation for the linear encoder \
      which can be either 'static' or 'dynamic'. The default setting is static ", default= "static")
-    if len(sys.argv)==1:
-        parser.print_help(sys.stderr)
-        sys.exit(1)
+
     args = parser.parse_args()
     if  "" == args.mode :
         mode = config.mode
@@ -160,7 +158,6 @@ if __name__=="__main__":
     else:
         video_path=args.footage
 
-    print(args.output)
 
 
     print(video_path)
@@ -169,8 +166,8 @@ if __name__=="__main__":
     my_stream=IIOImageStream(reader)
 
     extr=roiExtractorCanny.RoiExtractorCanny(config)
-    detec=shiftDetectorCovariance.ShiftDetectorCovariance()
-    #detec=shiftDetectorRestoration.ShiftDetectorRestoration()
+    #detec=shiftDetectorCovariance.ShiftDetectorCovariance(config)
+    detec=shiftDetectorRestoration.ShiftDetectorRestoration(config)
 
 
     lin_enc=LinearEncoder(extr, detec, my_stream, config, mode)

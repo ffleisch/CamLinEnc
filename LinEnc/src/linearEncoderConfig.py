@@ -12,7 +12,7 @@ class LinearEncoderConfig():
         # path of the input video file
         self.footage = "./recordFootage/footageRecorder/data/motor_test_6/motor_test_6.mp4"
         # can be either 'static' or 'dynamic'
-        self.mode = "static"
+        self.mode = "dynamic"
         # can be  0,1,2 for the RGB channels of the colored image 
         self.image_color_channel = 0 
         # subtracting the shift for finding next shift in LinearEncoder
@@ -55,28 +55,28 @@ class LinearEncoderConfig():
         # thickness of the line 
         self.lineThickness = 10
         # offset for calculating the intersection (x coordinate)
-        self.config.intersectionOffsetX = 0
+        self.intersectionOffsetX = 0
         # offset for calculating the intersection (y coordinate)        
-        self.config.intersectionOffsetY = 0 
+        self.intersectionOffsetY = 0 
 
         # (debug mode) circle radius for finding the rope with
-        self.config.RoiCenterCircleRadius = 2
+        self.RoiCenterCircleRadius = 2
         # (debug mode) circle thickness for finding the rope with
-        self.config.RoiCenterCircleThickness = 2
+        self.RoiCenterCircleThickness = 2
         # (debug mode) circle color for finding the rope with
-        self.config.RoiCenterCircleColor = (0, 255, 255)
+        self.RoiCenterCircleColor = (0, 255, 255)
 
         # (debug mode) circle radius for finding the rope with
-        self.config.findRopeWidthCircleRadius = 2
+        self.findRopeWidthCircleRadius = 2
         # (debug mode) circle thickness for finding the rope with
-        self.config.findRopeWidthCircleThickness = 2
+        self.findRopeWidthCircleThickness = 2
         # (debug mode) circle color for finding the rope with
-        self.config.findRopeWidthCircleColor = (0, 255, 255)
+        self.findRopeWidthCircleColor = (0, 255, 255)
 
         # multiplier for calculating the length of the roi window 
-        self.config.RoiLengthMultiplier = 0.5
+        self.RoiLengthMultiplier = 0.5
         # multiplier for calculating the width of the roi window 
-        self.config.RoiWidthMultiplier = 1.5
+        self.RoiWidthMultiplier = 1.5
 
 
         # ShiftDetectorRestoration
@@ -101,3 +101,9 @@ class LinearEncoderConfig():
         self.ShiftDetectorRestorationPrepRoiSigma1 = 5
         # sigma for gaussian ShiftDetectorRestoration image roi flat blur
         self.ShiftDetectorRestorationPrepRoiSigma2 = 30
+        # window length of the result of the correlation
+        self.ShiftDetectorRestorationWindow = 2
+        # correlation mode
+        self.ShiftDetectorRestorationCorrelationMode = "valid"
+        #
+        self.ShiftDetectorRestorationCorrelationBound = 2
