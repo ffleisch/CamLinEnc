@@ -12,9 +12,9 @@ def make_fade_matrix(a, b, shape):
     """
     Create an image of a given size with the edges fading to 0
     Multiplying by it allows to eliminate edge effects created during the IFFT
-    :param a: How many percent of the width too fade out
+    :param a: How many Percent of the width too fade out
     :param b: How many percent of the height to fade out
-    :param shape: shape of the fade matrix
+    :param shape: Shape of the fade matrix
     :return: A matrix containing values form 0 to 1
     """
     def helper(x, a, w):
@@ -37,28 +37,24 @@ def make_fade_matrix(a, b, shape):
 
 class ShiftDetectorRestoration(sD.ShiftDetector):
 
-    def __init__(self, config):
+    def __init__(self):
         """
-        Extract a shift from an Image with respect to a single base image
-         using the Shift Detection by Restoration
+        Extract a shift from an Image with respect to a single base image using the Shift Detection by Restoration
         Shifts of subsequent Images are added up using phase unwrapping
         """
-        self.config = config
         self.base_image_roi = None
-        self.beta = self.config.ShiftDetectorRestorationBeta
+        self.beta = 10000
 
     def set_base_image(self, base_image_roi):
         """
         Set the base image to be referenced for position
         Calculate the period of the signal using autocorrelation
-        Precalculate conjugate and power spectrum of the base image for later
-        use
+        Precalculate conjugate and power spectrum of the base image for later use
         :param base_image_roi: Base image to be used, already cropped
         """
-        self.edge_fade = make_fade_matrix(0.3, 0 , base_image_roi.shape)#self.config.ShiftDetectorRestorationPercentWidthFadeout,\
-            #self.config.ShiftDetectorRestorationPercentLengthFadeout, base_image_roi.shape)
+        self.edge_fade = make_fade_matrix(0.3, 0, base_image_roi.shape)
 
-        self.base_image = base_image_roi * self.edge_fade * self.config.ShiftDetectorRestorationBaseImageMultiplier
+        self.base_image = base_image_roi * self.edge_fade * 0.5
 
         self.base_dft = scipy.fft.fft2(base_image_roi, norm="ortho")
 
@@ -76,15 +72,14 @@ class ShiftDetectorRestoration(sD.ShiftDetector):
 
         slice = np.real(autocorrelation[0, :])
 
-        slice = scipy.ndimage.gaussian_filter1d(slice, slice.shape[0]\
-            * self.config.ShiftDetectorRestorationBaseImageGaussianFilterMultiplierUpper)\
-            - scipy.ndimage.gaussian_filter1d(slice, slice.shape[0]\
-            * self.config.ShiftDetectorRestorationBaseImageGaussianFilterMultiplierLower)
+        slice = scipy.ndimage.gaussian_filter1d(slice, slice.shape[0] * 0.03) - scipy.ndimage.gaussian_filter1d(slice,
+                                                                                                                slice.shape[
+                                                                                                                    0] * 0.1)
 
         slice = np.maximum(slice, np.average(slice))
 
-        maxima = argrelextrema(slice[1:], np.greater)
-        self.period = maxima[0][0]
+        maxmima = argrelextrema(slice[1:], np.greater)
+        self.period = maxmima[0][0]
         print("Period:", self.period)
         # autocorrelation=scipy.fft.fftshift(autocorrelation)
         # plt.imshow(np.real(autocorrelation))
@@ -94,8 +89,7 @@ class ShiftDetectorRestoration(sD.ShiftDetector):
 
     def find_shift(self, img_roi):
         """
-        Determine the shift of a given image with respect to the base
-        image and tally it up for a total shift
+        Determine the shift of a given image with respect to the base image and tally it up for a total shift
         :param img_roi: Cropped input image
         :return: Total shift with respect to the base image in pixels
         """
@@ -114,13 +108,11 @@ class ShiftDetectorRestoration(sD.ShiftDetector):
         shift_approx = scipy.fft.ifft2(shift_approx_dft, norm="ortho")
 
 
-        #there only should be a real part but due to numerical issues an imgainary
-        #part on the order of 1e13 has to be discarded
+        #there only should be a real part but due to numerical issues an imgainary part on the order of 1e13 has to be discarded
         real_p = np.real(shift_approx)
 
         #find the brightest coordinate
-        #it describes the shift contributing most to matching the current 
-        #image up to the original
+        #it describes the shift contributing most to matching the current image up to the original
         max_index = np.argwhere(real_p == real_p.max())
 
 
