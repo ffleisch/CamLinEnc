@@ -8,10 +8,10 @@ import roiExtractor as roiE
 
 class RoiExtractorCanny(roiE.RoiExtractor):
 
-    def __init__(self, debug_draw=False):
-        super(RoiExtractorCanny, self).__init__()
-        self.debug_draw = debug_draw
-
+    def __init__(self, config):
+        super(RoiExtractorCanny, self).__init__(config)
+        self.config = config
+        self.debug_draw = self.config.debug_draw
         self.img_debug = None
 
         self.rope_len = 0
@@ -27,7 +27,7 @@ class RoiExtractorCanny(roiE.RoiExtractor):
         self.found_params = False
 
 
-    #plot a line using rho and theta coodinates
+    #plot a line using rho and theta coordinates
     def __plot_line(self, img, rho, theta, col):
         a = math.cos(theta)
         b = math.sin(theta)
@@ -68,9 +68,16 @@ class RoiExtractorCanny(roiE.RoiExtractor):
         if self.debug_draw:
             self.img_debug = image.copy()
 
-        canny = cv2.Canny(image, 70, 150, None, 3)
+        canny = cv2.Canny(image, self.config.cannyUpperThreshold,\
+             self.config.cannyLowerThreshold,\
+             None, self.config.cannyApertureSize)
 
-        lines = cv2.HoughLines(canny, 2, np.pi / 180, 150, None, 0, 0)
+        lines = cv2.HoughLines(canny, self.config.HoughLinesRho,\
+             self.config.HoughLinesTheta,\
+             self.config.HoughLinesThreshold,\
+             self.config.HoughLinesLines,\
+             self.config.HoughLinesSRN,\
+             self.config.HoughLinesSTN)
 
         # draw lines to show
         # compute average theta and rho
@@ -92,17 +99,19 @@ class RoiExtractorCanny(roiE.RoiExtractor):
                 self.__plot_line(self.img_debug, avg_rho, avg_theta, (255, 0, 0))
 
         # filter canny edges into thick line to later exctract width
-        filter_mask = np.zeros((70, 70))
+        filter_mask = self.config.cannyEdgesFilterMask
 
         dx = -math.sin(avg_theta)
         dy = math.cos(avg_theta)
 
-        p1 = (int(filter_mask.shape[1] / 2 + dx * 1000), int(filter_mask.shape[0] / 2 + dy * 1000))
-        p2 = (int(filter_mask.shape[1] / 2 - dx * 1000), int(filter_mask.shape[0] / 2 - dy * 1000))
+        p1 = (int(filter_mask.shape[1] / self.config.pointBaseAdd + dx * self.config.pointBaseFactor),\
+             int(filter_mask.shape[0] / self.config.pointBaseAdd + dy * self.config.pointBaseFactor))
+        p2 = (int(filter_mask.shape[1] / self.config.pointBaseAdd - dx * self.config.pointBaseFactor),\
+             int(filter_mask.shape[0] / self.config.pointBaseAdd - dy * self.config.pointBaseFactor))
 
 
         #draw the filter
-        cv2.line(filter_mask, p1, p2, 1, 10, cv2.LINE_AA)
+        filter = cv2.line(filter_mask, p1, p2, self.config.lineColor, self.config.lineThickness, cv2.LINE_AA)
 
         # plt.imshow(filter)
         # plt.show()
@@ -113,7 +122,8 @@ class RoiExtractorCanny(roiE.RoiExtractor):
         width = canny_filtered.shape[1]
         height = canny_filtered.shape[0]
 
-        top, left = self.__line_intersection(avg_rho, avg_theta, 0, 0)
+        top, left = self.__line_intersection(avg_rho, avg_theta,\
+             self.config.intersectionOffsetX, self.config.intersectionOffsetY)
         bottom, right = self.__line_intersection(avg_rho, avg_theta, width, height)
 
         points = []
@@ -142,12 +152,13 @@ class RoiExtractorCanny(roiE.RoiExtractor):
             midpoint = (int((points[0][0] + points[1][0]) / 2), int((points[0][1] + points[1][1]) / 2))
 
             if self.debug_draw:
-                cv2.circle(self.img_debug, midpoint, 10, (255, 255, 0), 3)
+                cv2.circle(self.img_debug, midpoint, self.config.RoiCenterCircleRadius,\
+                    self.config.RoiCenterCircleColor, self.config.RoiCenterCircleThickness)
 
             dy = math.sin(avg_theta)
             dx = math.cos(avg_theta)
 
-            # find the width of the rope by sampling outwards from the midpoint in the filtered canny edge image, until it finds black on btoh sides
+            # find the width of the rope by sampling outwards from the midpoint in the filtered canny edge image, until it finds black on both sides
             i = 0
             while True:
                 xi = int(midpoint[0] - i * dx)
@@ -158,8 +169,13 @@ class RoiExtractorCanny(roiE.RoiExtractor):
                 try:
                     if canny_filtered[yi][xi] == 0 and canny_filtered[yo][xo] == 0:
                         if self.debug_draw:
-                            cv2.circle(self.img_debug, (xi, yi), 2, (0, 255, 255), 2)
-                            cv2.circle(self.img_debug, (xo, yo), 2, (0, 255, 255), 2)
+                            cv2.circle(self.img_debug, (xi, yi), self.config.findRopeWidthCircleRadius,\
+                                self.config.findRopeWidthCircleColor,\
+                                self.config.findRopeWidthCircleThickness)
+                            cv2.circle(self.img_debug, (xo, yo), self.config.findRopeWidthCircleRadius,\
+                                self.config.findRopeWidthCircleColor,\
+                                self.config.findRopeWidthCircleThickness)
+
                             print(i)
                         self.found_params = True
                         break
@@ -171,7 +187,7 @@ class RoiExtractorCanny(roiE.RoiExtractor):
             if self.found_params:
                 self.rope_len = np.sqrt(pow(points[0][0] - points[1][0], 2) + pow(points[0][1] - points[1][1], 2))
 
-                self.size = (self.rope_len * 0.5, (i + 1) * 1.5)
+                self.size = (self.rope_len * self.config.RoiLengthMultiplier, (i + 1) * self.config.RoiWidthMultiplier)
                 self.rho = avg_rho
                 self.theta = avg_theta
                 self.midpoint = midpoint

@@ -1,13 +1,15 @@
 from abc import ABC, abstractmethod
 
+from fontTools import configLogger
+
 
 
 
 
 class RoiExtractor(ABC):
 
-    def __init__(self):
-        pass
+    def __init__(self, config):
+        self.config = config
 
 
 

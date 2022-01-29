@@ -1,10 +1,14 @@
 import os
-
+import sys
 import cv2
+import argparse
 
+
+import linearEncoderConfig
 import roiExtractorCanny
 import shiftDetectorCovariance
 import shiftDetectorRestoration
+
 from abc import ABC, abstractmethod
 import imageio
 from matplotlib import pyplot as plt
@@ -27,7 +31,7 @@ class LinearEncoder:
 
 
 
-    def __init__(self, extractor, detector, image_stream, extraction_mode="static"):
+    def __init__(self, extractor, detector, image_stream, config, extraction_mode="static"):
         """
 
         :param extractor: a roiExtractor instance to crop the ROI from the input image
@@ -43,6 +47,7 @@ class LinearEncoder:
         self.extractor=extractor
         self.detector=detector
         self.extraction_mode=extraction_mode
+        self.config = config
 
         if extraction_mode=="dynamic":
             base_img=self.find_roi_dynamic(image_stream)
@@ -55,11 +60,11 @@ class LinearEncoder:
 
         plt.imshow(base_img_roi)
         plt.show()
-        self.detector.set_base_image(self.preprocess(base_img_roi))
-        self.zero_shift=0
-        self.shift=0
+        self.detector.set_base_image(self.preprocess(base_img_roi, self.config.image_color_channel))
+        self.zero_shift= config.zero_shift
+        self.shift=0 
 
-    def preprocess(self,img):
+    def preprocess(self,img, color_channel):
         """
         Do preprocessing on all Images given i.e. RGB to Greyscale
         :param img:
@@ -71,7 +76,7 @@ class LinearEncoder:
         #to use only the red channel
 
         #return cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
-        return img[:,:,0]
+        return img[:,:,color_channel]
 
 
     #find the roi by using the image directly
@@ -136,21 +141,36 @@ class LinearEncoder:
 
 #some testing of the class
 if __name__=="__main__":
+    config = linearEncoderConfig.LinearEncoderConfig() 
+    parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument("--footage", help="provide the footage path", default='')
+    parser.add_argument("--mode", help="provide the mode of operation for the linear encoder \
+     which can be either 'static' or 'dynamic'. The default setting is static ", default= "static")
 
-    path = "./recordFootage/footageRecorder/data"
-    test_name = "motor_test_6"
+    args = parser.parse_args()
+    if  "" == args.mode :
+        mode = config.mode
+    else:
+        mode = args.mode
 
-    video_path = os.path.abspath(os.path.join(path, test_name, test_name + ".mp4"))
+    if "" == args.footage:
+        video_path = config.footage
+    else:
+        video_path=args.footage
+
+
+
     print(video_path)
 
     reader = imageio.get_reader(video_path)
     my_stream=IIOImageStream(reader)
 
-    extr=roiExtractorCanny.RoiExtractorCanny()
-    #detec=shiftDetectorCovariance.ShiftDetectorCovariance()
-    detec=shiftDetectorRestoration.ShiftDetectorRestoration()
+    extr=roiExtractorCanny.RoiExtractorCanny(config)
+    #detec=shiftDetectorCovariance.ShiftDetectorCovariance(config)
+    detec=shiftDetectorRestoration.ShiftDetectorRestoration(config)
 
-    lin_enc=LinearEncoder(extr, detec, my_stream, "dynamic")
+
+    lin_enc=LinearEncoder(extr, detec, my_stream, config, mode)
 
 
     plt.ion()

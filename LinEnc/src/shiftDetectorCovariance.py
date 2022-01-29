@@ -8,6 +8,10 @@ from scipy.signal import argrelextrema
 
 class ShiftDetectorCovariance(sD.ShiftDetector):
 
+    def __init__(self, config):
+        self.config = config
+
+
     def set_base_image(self, base_image_roi):
         # find the brightness distribution of the home position
         self.base_brightness = self.find_brightness_curve(base_image_roi)
@@ -44,8 +48,8 @@ class ShiftDetectorCovariance(sD.ShiftDetector):
     # do a adaptive threshold and some blurring
     # suppreses brightness variation over the image
     def preprocess_roi(self,img):
-        sigma1 = 5
-        sigma2 = 30
+        sigma1 = self.config.ShiftDetectorRestorationPrepRoiSigma1 
+        sigma2 = self.config.ShiftDetectorRestorationPrepRoiSigma2
         img_blur = cv2.GaussianBlur(img, (0, 0), sigma1, sigma1)
         img_roi_flat = cv2.GaussianBlur(img, (0, 0), sigma2, sigma2)
         return cv2.absdiff(img_blur, img_roi_flat)
@@ -63,8 +67,8 @@ class ShiftDetectorCovariance(sD.ShiftDetector):
 
         # only take the middle of it
         # this is needed for the correlation to have no edge artifacts
-        # window is what is left ot on the ends and therefore the length of the result of the correlation
-        window=2
+        # window is what is left of on the ends and therefore the length of the result of the correlation
+        window= self.config.self.ShiftDetectorRestorationWindow
         brightness = brightness[int(self.period*window/2):int(l- self.period*window/2)]
 
         #check if there is enough left for the correlatiuon to be reliable
@@ -75,7 +79,8 @@ class ShiftDetectorCovariance(sD.ShiftDetector):
 
         # correlate the current brightness distribution and the brightness distribution of the home position
         # mode="valid" only output where the shorter brightness fits entirely onto the base_brightness
-        correlation = np.correlate(self.base_brightness, brightness, mode="valid")
+        correlation = np.correlate(self.base_brightness, brightness,\
+            mode=self.config.ShiftDetectorRestorationCorrelationMode)
 
 
 
@@ -90,7 +95,7 @@ class ShiftDetectorCovariance(sD.ShiftDetector):
         maxima = argrelextrema(correlation, np.greater)
 
 
-        if len(maxima[0]) >= 2:
+        if len(maxima[0]) >= self.config.ShiftDetectorRestorationCorrelationBound:
             # print(maxima)
             # print(maxima[0][0]-maxima[0][1])
             #for m in maxima[0]:
