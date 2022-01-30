@@ -120,11 +120,12 @@ class TestRunner:
 
 if __name__ == "__main__":
     myTestRunner = TestRunner()
-    recorder = rec.Recorder(save_name="motor_test_6")
+    recorder = rec.Recorder(save_name="motor_test_7")
     directions = simple_directions(speed=60, dist=30, delay=0)
     for d in directions:
         print(d)
     recorder.start_recording()
-    myTestRunner.run_test(directions)
+    #myTestRunner.run_test(directions)
+    time.sleep(20)
     recorder.stop_recording()
     print("finished test")
