@@ -63,9 +63,9 @@ class RoiExtractorCanny(roiE.RoiExtractor):
         self.found_params = False
 
         if self.debug_draw:
-            self.debug_dict["Raw Image"] = (0,image.copy())
-            self.debug_dict["ROI Debug Markers"]=(5,image.copy())
-            self.debug_dict["Hough Lines"]=(2,image.copy())
+            self.debug_img_dict["Raw Image"] = (0, image.copy())
+            self.debug_img_dict["ROI Debug Markers"]=(5, image.copy())
+            self.debug_img_dict["Hough Lines"]=(2, image.copy())
 
         canny = cv2.Canny(image, 70, 150, None, 3)
 
@@ -74,7 +74,7 @@ class RoiExtractorCanny(roiE.RoiExtractor):
 
 
         if self.debug_draw:
-            self.debug_dict["Canny Filter Result"]=(1,canny.copy())
+            self.debug_img_dict["Canny Filter Result"]=(1, canny.copy())
 
 
         # draw lines to show
@@ -90,13 +90,13 @@ class RoiExtractorCanny(roiE.RoiExtractor):
                 for i in range(0, len(lines)):
                     rho = lines[i][0][0]
                     theta = lines[i][0][1]
-                    self.__plot_line(self.debug_dict["ROI Debug Markers"][1], rho, theta, (0, 0, 255))
-                    self.__plot_line(self.debug_dict["Hough Lines"][1], rho, theta, (0, 0, 255))
+                    self.__plot_line(self.debug_img_dict["ROI Debug Markers"][1], rho, theta, (0, 0, 255))
+                    self.__plot_line(self.debug_img_dict["Hough Lines"][1], rho, theta, (0, 0, 255))
 
                 print(avg_rho, avg_theta)
 
-                self.__plot_line(self.debug_dict["ROI Debug Markers"][1], avg_rho, avg_theta, (255, 0, 0))
-                self.__plot_line(self.debug_dict["Hough Lines"][1], avg_rho, avg_theta, (255, 0, 0))
+                self.__plot_line(self.debug_img_dict["ROI Debug Markers"][1], avg_rho, avg_theta, (255, 0, 0))
+                self.__plot_line(self.debug_img_dict["Hough Lines"][1], avg_rho, avg_theta, (255, 0, 0))
 
         # filter canny edges into thick line to later exctract width
         filter_mask = np.zeros((70, 70))
@@ -118,8 +118,8 @@ class RoiExtractorCanny(roiE.RoiExtractor):
 
 
         if self.debug_draw:
-            self.debug_dict["Canny Image Filtered"]=(4,canny_filtered.copy())
-            self.debug_dict["Filter Mask"]=(3,filter_mask.copy())
+            self.debug_img_dict["Canny Image Filtered"]=(4, canny_filtered.copy())
+            self.debug_img_dict["Filter Mask"]=(3, filter_mask.copy())
 
         # find the intersections of the rope with the edge of the image
         width = canny_filtered.shape[1]
@@ -143,7 +143,7 @@ class RoiExtractorCanny(roiE.RoiExtractor):
         if self.debug_draw:
             print(len(points), points)
             for p in points:
-                cv2.circle(self.debug_dict["ROI Debug Markers"][1], p, 10, (0, 255, 0), 3)
+                cv2.circle(self.debug_img_dict["ROI Debug Markers"][1], p, 10, (0, 255, 0), 3)
 
         # finde den mittelpunkt der linie zwischen den schnittpunkten mit dem bildrand
         # find the midpoint of between the edge intersections
@@ -154,7 +154,7 @@ class RoiExtractorCanny(roiE.RoiExtractor):
             midpoint = (int((points[0][0] + points[1][0]) / 2), int((points[0][1] + points[1][1]) / 2))
 
             if self.debug_draw:
-                cv2.circle(self.debug_dict["ROI Debug Markers"][1], midpoint, 10, (255, 255, 0), 3)
+                cv2.circle(self.debug_img_dict["ROI Debug Markers"][1], midpoint, 10, (255, 255, 0), 3)
 
             dy = math.sin(avg_theta)
             dx = math.cos(avg_theta)
@@ -170,8 +170,8 @@ class RoiExtractorCanny(roiE.RoiExtractor):
                 try:
                     if canny_filtered[yi][xi] == 0 and canny_filtered[yo][xo] == 0:
                         if self.debug_draw:
-                            cv2.circle(self.debug_dict["ROI Debug Markers"][1], (xi, yi), 2, (0, 255, 255), 2)
-                            cv2.circle(self.debug_dict["ROI Debug Markers"][1], (xo, yo), 2, (0, 255, 255), 2)
+                            cv2.circle(self.debug_img_dict["ROI Debug Markers"][1], (xi, yi), 2, (0, 255, 255), 2)
+                            cv2.circle(self.debug_img_dict["ROI Debug Markers"][1], (xo, yo), 2, (0, 255, 255), 2)
                             print(i)
                         self.found_params = True
                         break

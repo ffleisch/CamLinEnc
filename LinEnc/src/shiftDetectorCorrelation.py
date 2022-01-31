@@ -8,7 +8,16 @@ from scipy.signal import argrelextrema
 
 class ShiftDetectorCorrelation(sD.ShiftDetector):
 
+    def __init__(self,debug_draw=False):
+        super(ShiftDetectorCorrelation, self).__init__(debug_draw)
+
     def set_base_image(self, base_image_roi):
+
+        if self.do_debug_draw:
+            self.debug_img_dict["Base Image"]=(0,base_image_roi.copy())
+            self.debug_img_dict["Base Image Preprocessed"]=(1,self.preprocess_roi(base_image_roi.copy()))
+
+
         # find the brightness distribution of the home position
         self.base_brightness = self.find_brightness_curve(base_image_roi)
 
@@ -27,8 +36,8 @@ class ShiftDetectorCorrelation(sD.ShiftDetector):
         self.rotations = 0
         self.last_shift = None
 
-
-
+        if self.do_debug_draw:
+            self.debug_plot_dict["Base Brightness Curve"]=(0,self.base_brightness.copy())
 
 
 

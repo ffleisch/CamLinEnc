@@ -9,7 +9,8 @@ class RoiExtractor(ABC):
     def __init__(self,debug_draw):
 
         self.debug_draw = debug_draw
-        self.debug_dict={}
+        self.debug_img_dict={}
+        self.debug_plot_dict={}
 
 
         pass
