@@ -24,7 +24,7 @@ def simple_directions(speed=10, dist=100, delay=2):
     """
     params = []
 
-    for i in range(20):
+    for i in range(5):
         params.append((dist, speed, delay))
         params.append((0, speed, delay))
 
@@ -120,12 +120,12 @@ class TestRunner:
 
 if __name__ == "__main__":
     myTestRunner = TestRunner()
-    recorder = rec.Recorder(save_name="motor_test_7")
-    directions = simple_directions(speed=60, dist=30, delay=0)
+    recorder = rec.Recorder(save_name="motor_test_9")
+    directions = simple_directions(speed=30, dist=100, delay=1)
     for d in directions:
         print(d)
     recorder.start_recording()
-    #myTestRunner.run_test(directions)
-    time.sleep(20)
+    myTestRunner.run_test(directions)
+    time.sleep(2)
     recorder.stop_recording()
     print("finished test")

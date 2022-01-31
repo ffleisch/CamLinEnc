@@ -9,10 +9,7 @@ import roiExtractor as roiE
 class RoiExtractorCanny(roiE.RoiExtractor):
 
     def __init__(self, debug_draw=False):
-        super(RoiExtractorCanny, self).__init__()
-        self.debug_draw = debug_draw
-
-        self.img_debug = None
+        super(RoiExtractorCanny, self).__init__(debug_draw)
 
         self.rope_len = 0
         self.size = 0
@@ -66,11 +63,19 @@ class RoiExtractorCanny(roiE.RoiExtractor):
         self.found_params = False
 
         if self.debug_draw:
-            self.img_debug = image.copy()
+            self.debug_dict["img0_raw"] = image.copy()
+            self.debug_dict["img5_markers"]=image.copy()
+            self.debug_dict["img2_hough_lines"]=image.copy()
 
         canny = cv2.Canny(image, 70, 150, None, 3)
 
         lines = cv2.HoughLines(canny, 2, np.pi / 180, 150, None, 0, 0)
+
+
+
+        if self.debug_draw:
+            self.debug_dict["img1_canny"]=canny.copy()
+
 
         # draw lines to show
         # compute average theta and rho
@@ -85,11 +90,13 @@ class RoiExtractorCanny(roiE.RoiExtractor):
                 for i in range(0, len(lines)):
                     rho = lines[i][0][0]
                     theta = lines[i][0][1]
-                    self.__plot_line(self.img_debug, rho, theta, (0, 0, 255))
+                    self.__plot_line(self.debug_dict["img5_markers"], rho, theta, (0, 0, 255))
+                    self.__plot_line(self.debug_dict["img2_hough_lines"], rho, theta, (0, 0, 255))
 
                 print(avg_rho, avg_theta)
 
-                self.__plot_line(self.img_debug, avg_rho, avg_theta, (255, 0, 0))
+                self.__plot_line(self.debug_dict["img5_markers"], avg_rho, avg_theta, (255, 0, 0))
+                self.__plot_line(self.debug_dict["img2_hough_lines"], avg_rho, avg_theta, (255, 0, 0))
 
         # filter canny edges into thick line to later exctract width
         filter_mask = np.zeros((70, 70))
@@ -108,6 +115,11 @@ class RoiExtractorCanny(roiE.RoiExtractor):
         # plt.show()
 
         canny_filtered = cv2.filter2D(canny, ddepth=-1, kernel=filter_mask)
+
+
+        if self.debug_draw:
+            self.debug_dict["img4_canny_filtered"]=canny_filtered.copy()
+            self.debug_dict["img3_filter_mask"]=filter_mask.copy()
 
         # find the intersections of the rope with the edge of the image
         width = canny_filtered.shape[1]
@@ -131,7 +143,7 @@ class RoiExtractorCanny(roiE.RoiExtractor):
         if self.debug_draw:
             print(len(points), points)
             for p in points:
-                cv2.circle(self.img_debug, p, 10, (0, 255, 0), 3)
+                cv2.circle(self.debug_dict["img5_markers"], p, 10, (0, 255, 0), 3)
 
         # finde den mittelpunkt der linie zwischen den schnittpunkten mit dem bildrand
         # find the midpoint of between the edge intersections
@@ -142,7 +154,7 @@ class RoiExtractorCanny(roiE.RoiExtractor):
             midpoint = (int((points[0][0] + points[1][0]) / 2), int((points[0][1] + points[1][1]) / 2))
 
             if self.debug_draw:
-                cv2.circle(self.img_debug, midpoint, 10, (255, 255, 0), 3)
+                cv2.circle(self.debug_dict["img5_markers"], midpoint, 10, (255, 255, 0), 3)
 
             dy = math.sin(avg_theta)
             dx = math.cos(avg_theta)
@@ -158,8 +170,8 @@ class RoiExtractorCanny(roiE.RoiExtractor):
                 try:
                     if canny_filtered[yi][xi] == 0 and canny_filtered[yo][xo] == 0:
                         if self.debug_draw:
-                            cv2.circle(self.img_debug, (xi, yi), 2, (0, 255, 255), 2)
-                            cv2.circle(self.img_debug, (xo, yo), 2, (0, 255, 255), 2)
+                            cv2.circle(self.debug_dict["img5_markers"], (xi, yi), 2, (0, 255, 255), 2)
+                            cv2.circle(self.debug_dict["img5_markers"], (xo, yo), 2, (0, 255, 255), 2)
                             print(i)
                         self.found_params = True
                         break

@@ -101,8 +101,8 @@ def send_bytes(data):
 
 
 def do_steps(steps):
-    print("len",len(steps))
-    print("steps",steps)
+    #print("len",len(steps))
+    #print("steps",steps)
     while(len(steps)>0):
         chunk=steps[:chunk_size]
         steps=steps[chunk_size:]

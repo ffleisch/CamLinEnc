@@ -123,7 +123,7 @@ class ShiftDetectorRestoration(sD.ShiftDetector):
         w = real_p.shape[1]
         h = real_p.shape[0]
 
-        plt.cla()
+        '''plt.cla()
         plt.imshow(scipy.fft.fftshift(real_p),cmap="gray",vmin=0)
         plt.plot((w/2+max_index[0][1])%w,(h/2+max_index[0][0])%h,"rx")
         plt.pause(0.01)
@@ -143,12 +143,12 @@ class ShiftDetectorRestoration(sD.ShiftDetector):
                     self.rotations += 1
                 else:
                     self.rotations -= 1
-                print(self.rotations)
+                #print(self.rotations)
         self.last_shift = self.shift
         # print(self.shift)
 
 
         #return the total shift
         #needs an accurate period
-        return -(self.period * self.rotations + self.shift)
+        return -(self.rotations + self.shift/self.period)
         # return self.rotations

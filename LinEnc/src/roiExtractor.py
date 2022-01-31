@@ -6,7 +6,12 @@ from abc import ABC, abstractmethod
 
 class RoiExtractor(ABC):
 
-    def __init__(self):
+    def __init__(self,debug_draw):
+
+        self.debug_draw = debug_draw
+        self.debug_dict={}
+
+
         pass
 
 
