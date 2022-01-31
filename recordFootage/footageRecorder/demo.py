@@ -51,13 +51,13 @@ if __name__=="__main__":
 
 
     #iio_reader=imageio.get_reader("<video0>")
-    iio_reader=imageio.get_reader("./data/motor_test_2/motor_test_2.mp4")
+    iio_reader=imageio.get_reader("./data/motor_test_8/motor_test_8.mp4")
     img_stream=le.IIOImageStream(iio_reader)
 
 
     extractor=rec.RoiExtractorCanny(debug_draw=do_show_debug)
 
-    detector=sdr.ShiftDetectorRestoration()
+    detector=sdr.ShiftDetectorRestoration(debug_draw=do_show_debug)
     #detector=sdc.ShiftDetectorCovariance()
 
 
@@ -68,14 +68,27 @@ if __name__=="__main__":
 
 
     if do_show_debug:
-        for name,img in sorted(extractor.debug_dict.items()):
-
-            print(name)
-            plt.title=name
-            plt.imshow(img)
+        print(extractor.debug_dict.items())
+        for name, item in sorted(extractor.debug_dict.items(), key=lambda x: x[1][0]):
+            print(name,item[0])
+            plt.title(name)
+            plt.imshow(item[1])
             plt.show()
 
 
+        for name,item in sorted(detector.debug_img_dict.items(),key=lambda x:x[1][0]):
+
+            print(name,item[0])
+            plt.title(name)
+            plt.imshow(item[1],cmap="gray")
+            plt.show()
+
+        for name,item in sorted(detector.debug_plot_dict.items(),key=lambda x:x[1][0]):
+
+            print(name,item[0])
+            plt.title(name)
+            plt.plot(item[1])
+            plt.show()
 
 
 
@@ -87,19 +100,31 @@ if __name__=="__main__":
 
 
 
-
-    do_debug=True
-
-
     if do_show_only:
+        plt.ion()
+        shifts=[]
+        detector.do_debug_draw=True
         while True:
             img = img_stream.get_next_image()
             if not img is None:
                 p = lin_enc.get_next_shift(img)
+                shifts.append(p)
                 print(p)
+
+                plt.cla()
+                plt.imshow(detector.debug_img_dict["Restored Filter"][1],cmap="gray",vmin=0)
+                point=detector.debug_plot_dict["Maximum"][1]
+                plt.plot(point[0],point[1],"rx")
+                plt.pause(0.01)
+                plt.draw()
+
+
             else:
                 break
-
+        plt.ioff()
+        plt.clf()
+        plt.plot(shifts)
+        plt.show()
 
     if do_correct:
         t = threading.Thread(target=readPosLoop, args=(lin_enc, pos))

@@ -55,8 +55,8 @@ class LinearEncoder:
                 raise ValueError("Not a valid extraction mode")
         base_img_roi=self.extractor.extractRoi(base_img)
 
-        plt.imshow(base_img_roi)
-        plt.show()
+        #plt.imshow(base_img_roi)
+        #plt.show()
         self.detector.set_base_image(self.preprocess(base_img_roi))
         self.zero_shift=0
         self.shift=0

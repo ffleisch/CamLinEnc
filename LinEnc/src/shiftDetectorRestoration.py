@@ -29,19 +29,21 @@ def make_fade_matrix(a, b, shape):
     for i in range(shape[0]):
         for j in range(shape[1]):
             arr[i][j] = helper(i, b * 2, shape[0]) * helper(j, a * 2, shape[1])
-    plt.imshow(arr)
-    plt.show()
+    #plt.imshow(arr)
+    #plt.show()
 
     return arr
 
 
 class ShiftDetectorRestoration(sD.ShiftDetector):
 
-    def __init__(self):
+    def __init__(self, debug_draw=False):
         """
         Extract a shift from an Image with respect to a single base image using the Shift Detection by Restoration
         Shifts of subsequent Images are added up using phase unwrapping
         """
+        super(ShiftDetectorRestoration, self).__init__(debug_draw)
+
         self.base_image_roi = None
         self.beta = 10000
 
@@ -54,7 +56,7 @@ class ShiftDetectorRestoration(sD.ShiftDetector):
         """
         self.edge_fade = make_fade_matrix(0.3, 0, base_image_roi.shape)
 
-        self.base_image = base_image_roi * self.edge_fade * 0.5
+        self.base_image = base_image_roi * self.edge_fade
 
         self.base_dft = scipy.fft.fft2(base_image_roi, norm="ortho")
 
@@ -67,10 +69,15 @@ class ShiftDetectorRestoration(sD.ShiftDetector):
 
 
         #because we already need the dft and conjugate we can easily calculate the autocorrelation by the folding theorem
-        autocorrelation_dft = self.base_dft * self.base_dft_conjugate
-        autocorrelation = scipy.fft.ifft2(autocorrelation_dft)
+        autocorrelation = scipy.fft.ifft2(self.base_power_spectrum)
 
         slice = np.real(autocorrelation[0, :])
+
+        if self.do_debug_draw:
+            self.debug_img_dict["Base Image"]=(0,self.base_image.copy())
+            self.debug_img_dict["Autocorrelation"] = (2,scipy.fft.fftshift(np.real(autocorrelation)))
+            self.debug_img_dict["Fade Mask"] =(1,self.edge_fade.copy())
+            self.debug_plot_dict["Autocorrelition Slice"] = (0,slice.copy())
 
         slice = scipy.ndimage.gaussian_filter1d(slice, slice.shape[0] * 0.03) - scipy.ndimage.gaussian_filter1d(slice,
                                                                                                                 slice.shape[
@@ -82,10 +89,9 @@ class ShiftDetectorRestoration(sD.ShiftDetector):
         self.period = maxmima[0][0]
         print("Period:", self.period)
         # autocorrelation=scipy.fft.fftshift(autocorrelation)
-        # plt.imshow(np.real(autocorrelation))
 
-        plt.plot(slice)
-        plt.show()
+        if self.do_debug_draw:
+            self.debug_plot_dict["Autocorrelation Slice Filtered"] = (1,slice.copy())
 
     def find_shift(self, img_roi):
         """
@@ -129,6 +135,11 @@ class ShiftDetectorRestoration(sD.ShiftDetector):
         plt.pause(0.01)
         plt.draw()
         #'''
+
+        if self.do_debug_draw:
+            self.debug_img_dict["Restored Filter"]=(10,scipy.fft.fftshift(real_p).copy())
+            self.debug_plot_dict["Maximum"]=(10,((w/2+max_index[0][1])%w,(h/2+max_index[0][0])%h))
+
 
         #image coordinates wrap below zero around to width
         #make so they are centered aorund 0
