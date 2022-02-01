@@ -65,6 +65,9 @@ class ShiftDetectorCorrelation(sD.ShiftDetector):
         brightness = self.find_brightness_curve(img_roi)
 
 
+        if self.do_debug_draw:
+            self.debug_plot_dict["Brightness Curve"] = (2, brightness.copy())
+            self.debug_plot_dict["Base Brightness Curve"]=(0,self.base_brightness.copy())
 
         l = len(brightness)
 
@@ -86,8 +89,8 @@ class ShiftDetectorCorrelation(sD.ShiftDetector):
         # mode="valid" only output where the shorter brightness fits entirely onto the base_brightness
         correlation = np.correlate(self.base_brightness, brightness, mode="valid")
 
-
-
+        if self.do_debug_draw:
+            self.debug_plot_dict["Correlation"] = (4, correlation.copy())
 
         # clip the correlation
         #correlation = correlation[:math.ceil(period * 2.5)]
@@ -97,6 +100,12 @@ class ShiftDetectorCorrelation(sD.ShiftDetector):
 
         # the maximum of the correlation indicates how much brightness is shifted from base_brightness
         maxima = argrelextrema(correlation, np.greater)
+
+
+        if self.do_debug_draw:
+            self.debug_plot_dict["Correlation Clipped"]=(5,correlation.copy())
+            self.debug_img_dict["Image Raw"]=(2,img_roi.copy())
+            self.debug_img_dict["Image Filtered"]=(3,self.preprocess_roi(img_roi.copy()))
 
 
         if len(maxima[0]) >= 2:
@@ -120,7 +129,8 @@ class ShiftDetectorCorrelation(sD.ShiftDetector):
                     self.rotations -= 1
         self.last_shift = self.shift
 
-
+        if self.do_debug_draw:
+            self.debug_plot_dict["Shift"]=(6,self.shift)
 
         return (self.rotations+self.shift/self.period)
 

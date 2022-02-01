@@ -51,14 +51,14 @@ if __name__=="__main__":
 
 
     #iio_reader=imageio.get_reader("<video0>")
-    iio_reader=imageio.get_reader("./data/motor_test_3/motor_test_3.mp4")
+    iio_reader=imageio.get_reader("./data/motor_test_8/motor_test_8.mp4")
     img_stream=le.IIOImageStream(iio_reader)
 
 
     extractor=rec.RoiExtractorCanny(debug_draw=do_show_debug)
 
-    #detector=sdr.ShiftDetectorRestoration(debug_draw=do_show_debug)
-    detector=sdc.ShiftDetectorCorrelation(debug_draw=do_show_debug)
+    detector=sdr.ShiftDetectorRestoration(debug_draw=do_show_debug)
+    #detector=sdc.ShiftDetectorCorrelation(debug_draw=do_show_debug)
 
     detector.beta=100000
 
@@ -99,12 +99,19 @@ if __name__=="__main__":
     do_measure=False
     do_show_only=True
 
-
+    num_show=100
 
     if do_show_only:
         plt.ion()
         shifts=[]
         detector.do_debug_draw=True
+
+        if isinstance(detector,sdr.ShiftDetectorRestoration):
+            fig,axs=plt.subplots(2)
+        else:
+            fig,axs=plt.subplots(5)
+
+
         while True:
             img = img_stream.get_next_image()
             if not img is None:
@@ -112,15 +119,50 @@ if __name__=="__main__":
                 shifts.append(p)
                 print(p)
 
-                if type(extractor)==sdr.ShiftDetectorRestoration:
-                    plt.cla()
-                    plt.imshow(detector.debug_img_dict["Restored Filter"][1],cmap="gray",vmin=0)
+                if isinstance(detector,sdr.ShiftDetectorRestoration):
+                    axs[0].cla()
+                    axs[1].cla()
+                    axs[0].imshow(detector.debug_img_dict["Restored Filter"][1],cmap="gray",vmin=0)
                     point=detector.debug_plot_dict["Maximum"][1]
-                    plt.plot(point[0],point[1],"rx")
+                    axs[0].plot(point[0],point[1],"rx")
+                    l=len(shifts)
+                    axs[1].plot(shifts[l-min(num_show,l):l])
+
                     plt.pause(0.01)
                     plt.draw()
 
 
+                else:
+                    base_brightness=detector.debug_plot_dict["Base Brightness Curve"][1]
+                    brightness=detector.debug_plot_dict["Brightness Curve"][1]
+                    correlation_raw=detector.debug_plot_dict["Correlation"][1]
+                    correlation=detector.debug_plot_dict["Correlation Clipped"][1]
+                    shift=detector.debug_plot_dict["Shift"][1]
+                    img_roi=detector.debug_img_dict["Image Raw"][1]
+                    img_roi_filtered=detector.debug_img_dict["Image Filtered"][1]
+
+                    axs[0].cla()
+                    axs[1].cla()
+                    axs[2].cla()
+                    axs[3].cla()
+                    axs[4].cla()
+
+                    axs[2].plot(brightness)
+                    axs[2].plot(base_brightness)
+                    axs[3].plot(correlation_raw)
+                    axs[3].plot(shift,correlation_raw[shift],"rx")
+
+                    axs[3].set_xlim(0,len(base_brightness))
+
+                    axs[0].imshow(img_roi, cmap="gray")
+                    axs[1].imshow(img_roi_filtered, cmap="gray")
+
+                    l = len(shifts)
+                    axs[4].plot(shifts[l - min(num_show, l):l])
+
+                    plt.draw()
+                    plt.pause(0.01)
+                    #plt.pause(1)
             else:
                 break
         plt.ioff()

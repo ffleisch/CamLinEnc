@@ -45,7 +45,7 @@ class ShiftDetectorRestoration(sD.ShiftDetector):
         super(ShiftDetectorRestoration, self).__init__(debug_draw)
 
         self.base_image_roi = None
-        self.beta = 10000
+        self.beta = 100
 
     def set_base_image(self, base_image_roi):
         """
@@ -149,11 +149,12 @@ class ShiftDetectorRestoration(sD.ShiftDetector):
         #phase unwrapping
         #needs an accurate period
         if self.last_shift is not None:
-            if abs(self.last_shift - self.shift) > self.period / 2:
+            jump=abs(self.last_shift - self.shift)
+            if jump > self.period / 2:
                 if self.last_shift > self.shift:
-                    self.rotations += 1
+                    self.rotations += round(jump/self.period)
                 else:
-                    self.rotations -= 1
+                    self.rotations -= round(jump/self.period)
                 #print(self.rotations)
         self.last_shift = self.shift
         # print(self.shift)
