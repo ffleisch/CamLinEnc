@@ -74,9 +74,9 @@ class ShiftDetectorRestoration(sD.ShiftDetector):
         slice = np.real(autocorrelation[0, :])
 
         if self.do_debug_draw:
-            self.debug_img_dict["Base Image"]=(0,self.base_image.copy())
+            self.debug_img_dict["Base Image"]=(1,self.base_image.copy())
             self.debug_img_dict["Autocorrelation"] = (2,scipy.fft.fftshift(np.real(autocorrelation)))
-            self.debug_img_dict["Fade Mask"] =(1,self.edge_fade.copy())
+            self.debug_img_dict["Fade Mask"] =(0,self.edge_fade.copy())
             self.debug_plot_dict["Autocorrelition Slice"] = (0,slice.copy())
 
         slice = scipy.ndimage.gaussian_filter1d(slice, slice.shape[0] * 0.03) - scipy.ndimage.gaussian_filter1d(slice,

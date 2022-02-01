@@ -51,7 +51,7 @@ if __name__=="__main__":
 
 
     #iio_reader=imageio.get_reader("<video0>")
-    iio_reader=imageio.get_reader("./data/motor_test_8/motor_test_8.mp4")
+    iio_reader=imageio.get_reader("./data/motor_test_5/motor_test_5.mp4")
     img_stream=le.IIOImageStream(iio_reader)
 
 
@@ -73,7 +73,7 @@ if __name__=="__main__":
         for name, item in sorted(extractor.debug_img_dict.items(), key=lambda x: x[1][0]):
             print(name,item[0])
             plt.title(name)
-            plt.imshow(item[1])
+            plt.imshow(item[1],cmap="gray")
             plt.show()
 
 
