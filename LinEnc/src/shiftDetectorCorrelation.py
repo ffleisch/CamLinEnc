@@ -13,9 +13,13 @@ class ShiftDetectorCorrelation(sD.ShiftDetector):
 
     def set_base_image(self, base_image_roi):
 
+
+        #dirty
+        self.debug_plot_dict["All Shifts"]=(3,[])
         if self.do_debug_draw:
-            self.debug_img_dict["Base Image"]=(0,base_image_roi.copy())
-            self.debug_img_dict["Base Image Preprocessed"]=(1,self.preprocess_roi(base_image_roi.copy()))
+            with self.debug_lock:
+                self.debug_img_dict["Base Image"]=(0,base_image_roi.copy())
+                self.debug_img_dict["Base Image Preprocessed"]=(1,self.preprocess_roi(base_image_roi.copy()))
 
 
         # find the brightness distribution of the home position
@@ -37,7 +41,8 @@ class ShiftDetectorCorrelation(sD.ShiftDetector):
         self.last_shift = None
 
         if self.do_debug_draw:
-            self.debug_plot_dict["Base Brightness Curve"]=(0,self.base_brightness.copy())
+            with self.debug_lock:
+                self.debug_plot_dict["Base Brightness Curve"]=(0,self.base_brightness.copy())
 
 
 
@@ -66,8 +71,9 @@ class ShiftDetectorCorrelation(sD.ShiftDetector):
 
 
         if self.do_debug_draw:
-            self.debug_plot_dict["Brightness Curve"] = (2, brightness.copy())
-            self.debug_plot_dict["Base Brightness Curve"]=(0,self.base_brightness.copy())
+            with self.debug_lock:
+                self.debug_plot_dict["Brightness Curve"] = (2, brightness.copy())
+                self.debug_plot_dict["Base Brightness Curve"]=(0,self.base_brightness.copy())
 
         l = len(brightness)
 
@@ -90,7 +96,8 @@ class ShiftDetectorCorrelation(sD.ShiftDetector):
         correlation = np.correlate(self.base_brightness, brightness, mode="valid")
 
         if self.do_debug_draw:
-            self.debug_plot_dict["Correlation"] = (4, correlation.copy())
+            with self.debug_lock:
+                self.debug_plot_dict["Correlation"] = (4, correlation.copy())
 
         # clip the correlation
         #correlation = correlation[:math.ceil(period * 2.5)]
@@ -103,9 +110,10 @@ class ShiftDetectorCorrelation(sD.ShiftDetector):
 
 
         if self.do_debug_draw:
-            self.debug_plot_dict["Correlation Clipped"]=(5,correlation.copy())
-            self.debug_img_dict["Image Raw"]=(2,img_roi.copy())
-            self.debug_img_dict["Image Filtered"]=(3,self.preprocess_roi(img_roi.copy()))
+            with self.debug_lock:
+                self.debug_plot_dict["Correlation Clipped"]=(5,correlation.copy())
+                self.debug_img_dict["Image Raw"]=(2,img_roi.copy())
+                self.debug_img_dict["Image Filtered"]=(3,self.preprocess_roi(img_roi.copy()))
 
 
         if len(maxima[0]) >= 2:
@@ -129,9 +137,14 @@ class ShiftDetectorCorrelation(sD.ShiftDetector):
                     self.rotations -= 1
         self.last_shift = self.shift
 
-        if self.do_debug_draw:
-            self.debug_plot_dict["Shift"]=(6,self.shift)
+        total_shift=self.rotations+self.shift/self.period
 
-        return (self.rotations+self.shift/self.period)
+
+        if self.do_debug_draw:
+            with self.debug_lock:
+                self.debug_plot_dict["Shift"]=(6,self.shift)
+                self.debug_plot_dict["All Shifts"][1].append(total_shift)
+
+        return total_shift
 
 

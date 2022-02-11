@@ -1,3 +1,4 @@
+import threading
 from abc import ABC, abstractmethod
 
 
@@ -12,6 +13,7 @@ class RoiExtractor(ABC):
         self.debug_img_dict={}
         self.debug_plot_dict={}
 
+        self.debug_lock=threading.Lock()
 
         pass
 

@@ -1,3 +1,4 @@
+import threading
 from abc import ABC, abstractmethod
 
 
@@ -8,6 +9,7 @@ class ShiftDetector(ABC):
         self.do_debug_draw=do_debug_draw
         self.debug_img_dict={}
         self.debug_plot_dict={}
+        self.debug_lock=threading.Lock()
 
     @abstractmethod
     def set_base_image(self, base_image_roi):

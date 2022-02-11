@@ -73,11 +73,14 @@ class ShiftDetectorRestoration(sD.ShiftDetector):
 
         slice = np.real(autocorrelation[0, :])
 
+        #dirty
+        self.debug_plot_dict["All Shifts"]=(3,[])
         if self.do_debug_draw:
-            self.debug_img_dict["Base Image"]=(1,self.base_image.copy())
-            self.debug_img_dict["Autocorrelation"] = (2,scipy.fft.fftshift(np.real(autocorrelation)))
-            self.debug_img_dict["Fade Mask"] =(0,self.edge_fade.copy())
-            self.debug_plot_dict["Autocorrelition Slice"] = (0,slice.copy())
+            with self.debug_lock:
+                self.debug_img_dict["Base Image"]=(1,self.base_image.copy())
+                self.debug_img_dict["Autocorrelation"] = (2,scipy.fft.fftshift(np.real(autocorrelation)))
+                self.debug_img_dict["Fade Mask"] =(0,self.edge_fade.copy())
+                self.debug_plot_dict["Autocorrelition Slice"] = (0,slice.copy())
 
         slice = scipy.ndimage.gaussian_filter1d(slice, slice.shape[0] * 0.03) - scipy.ndimage.gaussian_filter1d(slice,
                                                                                                                 slice.shape[
@@ -91,7 +94,8 @@ class ShiftDetectorRestoration(sD.ShiftDetector):
         # autocorrelation=scipy.fft.fftshift(autocorrelation)
 
         if self.do_debug_draw:
-            self.debug_plot_dict["Autocorrelation Slice Filtered"] = (1,slice.copy())
+            with self.debug_lock:
+                self.debug_plot_dict["Autocorrelation Slice Filtered"] = (1,slice.copy())
 
     def find_shift(self, img_roi):
         """
@@ -137,8 +141,9 @@ class ShiftDetectorRestoration(sD.ShiftDetector):
         #'''
 
         if self.do_debug_draw:
-            self.debug_img_dict["Restored Filter"]=(10,scipy.fft.fftshift(real_p).copy())
-            self.debug_plot_dict["Maximum"]=(10,((w/2+max_index[0][1])%w,(h/2+max_index[0][0])%h))
+            with self.debug_lock:
+                self.debug_img_dict["Restored Filter"]=(10,scipy.fft.fftshift(real_p).copy())
+                self.debug_plot_dict["Maximum"]=(10,((w/2+max_index[0][1])%w,(h/2+max_index[0][0])%h))
 
 
         #image coordinates wrap below zero around to width
@@ -160,7 +165,14 @@ class ShiftDetectorRestoration(sD.ShiftDetector):
         # print(self.shift)
 
 
+        total_shift=self.rotations+self.shift/self.period
+
+        if self.do_debug_draw:
+            with self.debug_lock:
+                self.debug_plot_dict["All Shifts"][1].append(total_shift)
+
+
         #return the total shift
         #needs an accurate period
-        return -(self.rotations + self.shift/self.period)
+        return -total_shift
         # return self.rotations
