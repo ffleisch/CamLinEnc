@@ -17,9 +17,16 @@
 	\author{Bruno Reinhold,Felix Fleisch}
 	\maketitle
 
+\section{Einführung}
+
+\subsection{Aufgabenstellung}
+Es soll eine Python Bibliothek entwickelt werden um eine an den Rechner angeschlossene Kamera als linearen Encoder benutzen zu können. Hierzu wird ein neuer Algorithmus entwickelt, welcher für eine Folge von Bildern sequentiell für jedes Bild das Muster auf dem Seil benutzt um diskrete Perioden zählen und eine Abweichung von der Startposition auszugeben.
+Dies macht es einfach eine geschlossene Regelschleife und genaue Positionierung für verschiedenste Anwendungen zu erstellen.
+Die Bibliothek und der Entwicklungsprozess sollen gut dokumentiert werden.
+Die entwickelte Methode soll ausführlich unter verschiedenen Bedingungen getestet werden.
 
 
-\section{Motivation}
+\subsection{Motivation}
 Ein linearer Encoder ist ein Messgerät mit welchem Distanz entlang einer Achse gemessen werden kann. Klassischerweise wird hierfür eine optisch oder magnetisch markierte Schiene benutzt welche bei Bewegung ein Signaländerung in einem Sensor hervorruft. Das Signal kann interpretiert werden um eine Distanz zu erhalten. Hierbei unterscheidet man inkrementelle und absolute Encoder. Ein absoluter Encoder verschlüsselt seine Position im Signal, während ein inkrementeller Encoder die Position aus Diskreten Signaländerungen aufsummiert. Sie werden benutzt um eine genaue Positionierung von verschiedener Hardware wie z.b. CNC Maschinen zu erlauben. 
 
 Ein Seilantrieb ist ein antrieb in welchem ein Seil mit einem Motor bewegt wird, um zum Beispiel einen V-Plotter zu positionieren. Seilantriebe sind preisgünstig und mechanisch einfach. Die länge des Seils lässt sich auch fast beliebig skalieren. Seilantriebe mit einfachen Rollen sind inhärent über lange Zeiten ungenau, was eine offene Regelschleife unzuverlässig macht. Dies wurde experimentell im Voraus festgestellt. Es wurde auch ein ähnlicher Fehler auch für einen mit einer Rolle am Seil angetrieben Magnet Drehencoder festgestellt.
@@ -31,12 +38,9 @@ Um dies zu verhindern das Seil durch einen Zahnriemen oder z.b. eine Gardienenke
 
 Alternativ kann eine geschlossene Regelschleife benutzt werden um den sich langsam ansammelnden Fehler zu messen und laufend zu korrigieren. In diesem Projekt wurde mit einer Webcam ein Seil gefilmt und seine diskreten Markierungen benutzt um Information über die bewegte Länge zu erhalten.
 
-\section{Aufgabenstellung}
-Es soll eine Python Bibliothek entwickelt werden um eine an den Rechner angeschlossene Kamera als linearen Encoder benutzen zu können. Hierzu wird ein neuer Algorithmus entwickelt, welcher für eine Folge von Bildern sequentiell für jedes Bild das Muster auf dem Seil benutzt um diskrete Perioden zählen und eine Abweichung von der Startposition auszugeben.
-Dies macht es einfach eine geschlossene Regelschleife und genaue Positionierung für verschiedenste Anwendungen zu erstellen.
-Die Bibliothek und der Entwicklungsprozess sollen gut dokumentiert werden.
-Die entwickelte Methode soll ausführlich unter verschiedenen Bedingungen getestet werden.
-
+\subsection{Literatur}
+	%paper sdr
+	
 
 \section{Theorie}
 
@@ -51,20 +55,31 @@ Die entwickelte Methode soll ausführlich unter verschiedenen Bedingungen getest
 	\subsection{Bestimmung der Verschiebung}
 	
 		\subsubsection{Bestimmung der Periode}
-
+		
 		\subsubsection{Autokorrelation}
-	
+		%Felix
+		
+		
 		\subsubsection{Phase Unwrapping}
 
+	\subsection{Shift detection by Restoration}
+	%Felix
 
+\section{Dataset}
+	\subsection{Test Setup}
+	%footage recorder
+	%motor/steuerung
+	\subsection{Live Demo}
+	%live demo beschreiben
+	
+	
 \subsection{Limitationen}
 
 \section{Evaluation}
 
 \section{Ausblick}
 
-
-
+\appendix
 
 
 \end{document}
