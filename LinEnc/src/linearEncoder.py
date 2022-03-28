@@ -139,7 +139,7 @@ class LinearEncoder:
 #some testing of the class
 if __name__=="__main__":
 
-    path = "./recordFootage/footageRecorder/data"
+    path = "../../recordFootage/footageRecorder/data"
     test_name = "motor_test_6"
 
     video_path = os.path.abspath(os.path.join(path, test_name, test_name + ".mp4"))
@@ -148,9 +148,9 @@ if __name__=="__main__":
     reader = imageio.get_reader(video_path)
     my_stream=IIOImageStream(reader)
 
-    extr=roiExtractorCanny.RoiExtractorCanny()
-    #detec=shiftDetectorCovariance.ShiftDetectorCovariance()
-    detec=shiftDetectorRestoration.ShiftDetectorRestoration()
+    extr=roiExtractorCanny.RoiExtractorCanny(debug_draw=True)
+    detec=shiftDetectorCorrelation.ShiftDetectorCorrelation()
+    #detec=shiftDetectorRestoration.ShiftDetectorRestoration(debug_draw=True)
 
     lin_enc=LinearEncoder(extr, detec, my_stream, "dynamic")
 

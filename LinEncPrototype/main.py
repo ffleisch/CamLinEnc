@@ -47,7 +47,7 @@ differential_frame_number=20
 if __name__ == "__main__":
 
     path = "../recordFootage/footageRecorder/data"
-    test_name = "motor_test_1"
+    test_name = "motor_test_2"
 
     video_path = os.path.abspath(os.path.join(path, test_name, test_name + ".mp4"))
     print(video_path)
@@ -261,6 +261,9 @@ if __name__ == "__main__":
 
 
     fig, axs = plt.subplots(2,sharex=True)
-    axs[0].plot(all_shifts)
-    axs[1].plot(all_shifts_summed)
+    axs[0].plot(all_shifts/period)
+    axs[0].set_ylabel("Perioden")
+    axs[1].plot(all_shifts_summed/period)
+    axs[1].set_ylabel("Perioden")
+    axs[1].set_xlabel("Frames")
     plt.show()

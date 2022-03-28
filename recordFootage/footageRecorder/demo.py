@@ -71,26 +71,35 @@ def live_debug(fig,axs,num_show=100):
             shift = detector.debug_plot_dict["Shift"][1]
             img_roi = detector.debug_img_dict["Image Raw"][1]
             img_roi_filtered = detector.debug_img_dict["Image Filtered"][1]
-
+        fig.tight_layout()
         axs[0].cla()
         axs[1].cla()
         axs[2].cla()
         axs[3].cla()
         axs[4].cla()
 
-        axs[2].plot(brightness)
-        axs[2].plot(base_brightness)
-        axs[3].plot(correlation_raw)
-        axs[3].plot(correlation)
+
+        axs[2].plot(brightness,label="Signal")
+        axs[2].plot(base_brightness,label="Referenz Signal")
+        axs[2].legend(loc="upper right")
+
+        axs[3].plot(correlation_raw,label="Korrelation roh")
+        axs[3].plot(correlation,label="Korrelation geclippt")
+        axs[3].legend(loc="upper right")
         axs[3].plot(shift, correlation_raw[shift], "rx")
 
         axs[3].set_xlim(0, len(base_brightness))
+        axs[3].set_xlabel("Pixel")
 
         axs[0].imshow(img_roi, cmap="gray")
         axs[1].imshow(img_roi_filtered, cmap="gray")
 
         l = len(shifts)
-        axs[4].plot(shifts[l - min(num_show, l):l])
+        axs[4].plot(shifts[l - min(num_show, l):l],label="Verschiebung gesammelt")
+
+        axs[4].legend(loc="upper right")
+        axs[4].set_xlabel("Frames")
+        axs[4].set_ylabel("Perioden")
 
         plt.draw()
         plt.pause(0.01)
@@ -102,15 +111,15 @@ do_show_debug=False
 if __name__=="__main__":
 
 
-    iio_reader=imageio.get_reader("<video0>")
-    #iio_reader=imageio.get_reader("./data/motor_test_4/motor_test_4.mp4")
+    #iio_reader=imageio.get_reader("<video0>")
+    iio_reader=imageio.get_reader("./data/motor_test_2/motor_test_2.mp4")
     img_stream=le.IIOImageStream(iio_reader)
 
 
     extractor=rec.RoiExtractorCanny(debug_draw=do_show_debug)
 
-    detector=sdr.ShiftDetectorRestoration(debug_draw=True)
-    #detector=sdc.ShiftDetectorCorrelation(debug_draw=True)
+    #detector=sdr.ShiftDetectorRestoration(debug_draw=True)
+    detector=sdc.ShiftDetectorCorrelation(debug_draw=True)
 
     detector.beta=10000
 
@@ -148,12 +157,12 @@ if __name__=="__main__":
 
 
 
-    do_show_only=False
+    do_show_only=True
 
     do_correct=False
     do_measure=False
     do_live=False
-    do_experiment=True
+    do_experiment=False
 
     num_show=100
 
@@ -166,6 +175,8 @@ if __name__=="__main__":
             fig,axs=plt.subplots(2)
         else:
             fig,axs=plt.subplots(5)
+            axs[0].get_shared_x_axes().join(axs[0],axs[3])
+            axs[0].get_shared_x_axes().join(axs[0],axs[2])
 
 
         while True:
