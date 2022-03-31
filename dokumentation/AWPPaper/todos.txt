@@ -1,0 +1,33 @@
+Felix:
+    done-Phase unwrapping schreiben
+    done-Autokorrelation schreiben
+    done-live demo schreiben
+    -Arbeit ergänzen
+    -Bilder hinzufügen
+      -Parameter Testvideos rausfinden
+    -breitenbestimmung ergänzen
+Allgemein:
+    -abstract schreiben
+    halfdone -Evaluation schreiben
+    -Ausblick schreiben
+
+Ausserhalb:
+    -python paket strukur machen?
+    -mit pip .whl bauen ?
+
+
+
+Notizen zum Inhalt
+
+Future Work:
+    -schneller ROI ausschneiden
+        -erst croppen (schnell)
+        -dann rotieren (lansgaam und aufwendig)
+        -wieder croppen
+    -oder selber roi "mappen"
+
+    -cython implementation für mehr speed
+
+    -dynamische roi?
+
+    -tatsächlich einen roboter bauen
